@@ -3,9 +3,9 @@
 // PostgreSQL is the transactional system of record (TDA-IMP-M0-002, TDA-ADR-001).
 // Schema evolution is owned by Prisma migrations.
 //
-// M1 adds only authentication identity-mapping and session persistence.
-// Organization, Branch, Membership, Role, and Permission tables are deferred
-// (M1 authentication-only scope). Patient/Appointment/Notification remain later.
+// M1: authentication identity-mapping and session persistence.
+// M2: organization/tenant, membership, RBAC catalog, security event log.
+// Patient/Appointment/Notification remain later.
 
 generator client {
   provider = "prisma-client-js"
@@ -17,14 +17,16 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
+  id            String             @id @default(cuid())
   email         String?
-  emailVerified Boolean        @default(false)
-  status        String         @default("active")
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  emailVerified Boolean            @default(false)
+  status        String             @default("active")
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
   identities    UserIdentity[]
   sessions      AuthSession[]
+  memberships   Membership[]
+  platformRoles UserPlatformRole[]
 
   @@map("users")
 }
@@ -71,4 +73,117 @@ model AuthLoginTransaction {
   createdAt   DateTime  @default(now())
 
   @@map("auth_login_transactions")
+}
+
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  status      String       @default("active")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  branches    Branch[]
+  memberships Membership[]
+
+  @@map("organizations")
+}
+
+model Branch {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  status         String       @default("active")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  memberships    Membership[]
+
+  @@index([organizationId])
+  @@map("branches")
+}
+
+model Membership {
+  id             String           @id @default(cuid())
+  userId         String
+  organizationId String
+  branchId       String?
+  status         String           @default("active")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  user           User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  branch         Branch?          @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  roles          MembershipRole[]
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+model Role {
+  id            String             @id
+  key           String             @unique
+  name          String
+  scope         String
+  createdAt     DateTime           @default(now())
+  permissions   RolePermission[]
+  memberships   MembershipRole[]
+  platformUsers UserPlatformRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id        String           @id
+  key       String           @unique
+  name      String
+  scope     String
+  createdAt DateTime         @default(now())
+  roles     RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Restrict)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model MembershipRole {
+  membershipId String
+  roleId       String
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Restrict)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([membershipId, roleId])
+  @@map("membership_roles")
+}
+
+model UserPlatformRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([userId, roleId])
+  @@map("user_platform_roles")
+}
+
+model SecurityEvent {
+  id             String   @id @default(cuid())
+  actorUserId    String?
+  organizationId String?
+  action         String
+  outcome        String
+  reason         String?
+  createdAt      DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([organizationId])
+  @@map("security_events")
 }
