@@ -18,7 +18,9 @@ BLOCKED — HUMAN DECISION REQUIRED
 
 Appointment **cannot** be implemented safely without inventing architecture that the controlled sources leave open, conflict on, or explicitly defer.
 
-Do **not** treat this document as permission to code. Implementation must wait for human decisions listed in §N and the blocker table in §P.
+A proposed resolution is recorded in `docs/ADR-FOLLOWUP-M4.md`. That record is **PROPOSED — AWAITING HUMAN APPROVAL**. It is **not** an approved ADR. Agents must not mark it APPROVED.
+
+Do **not** treat this discovery document or ADR-FOLLOWUP-M4 recommendations as permission to code. Implementation must wait until ADR-FOLLOWUP-M4 §40 is marked **APPROVED** by the human.
 
 ---
 
