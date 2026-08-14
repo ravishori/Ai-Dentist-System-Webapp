@@ -1,0 +1,13 @@
+node_modules
+.next
+dist
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+*.docx
+*.zip
+packages/db/src/generated
+.next
+# Approved ADRs must not be auto-reformatted; table wrapping looks like content change.
+docs/adr/

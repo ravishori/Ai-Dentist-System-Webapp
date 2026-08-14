@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Environment and secrets — never commit real values
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Build outputs
+.next
+out
+dist
+coverage
+*.tsbuildinfo
+
+# Prisma generated client (regenerated from schema)
+packages/db/src/generated
+
+# Test artifacts
+playwright-report
+test-results
+blob-report
+playwright/.cache
+
+# Logs and OS
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea
+.vscode/*
+!.vscode/extensions.json

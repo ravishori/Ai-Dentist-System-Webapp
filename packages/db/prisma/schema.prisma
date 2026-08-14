@@ -1,0 +1,74 @@
+// DentalCare AI — Prisma schema
+//
+// PostgreSQL is the transactional system of record (TDA-IMP-M0-002, TDA-ADR-001).
+// Schema evolution is owned by Prisma migrations.
+//
+// M1 adds only authentication identity-mapping and session persistence.
+// Organization, Branch, Membership, Role, and Permission tables are deferred
+// (M1 authentication-only scope). Patient/Appointment/Notification remain later.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String?
+  emailVerified Boolean        @default(false)
+  status        String         @default("active")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  identities    UserIdentity[]
+  sessions      AuthSession[]
+
+  @@map("users")
+}
+
+model UserIdentity {
+  id        String   @id @default(cuid())
+  userId    String
+  issuer    String
+  subject   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([issuer, subject])
+  @@index([userId])
+  @@map("user_identities")
+}
+
+model AuthSession {
+  id              String    @id @default(cuid())
+  userId          String
+  tokenHash       String    @unique
+  subject         String
+  issuer          String
+  email           String?
+  emailVerified   Boolean?
+  displayName     String?
+  authenticatedAt DateTime
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model AuthLoginTransaction {
+  id          String    @id @default(cuid())
+  stateHash   String    @unique
+  nonceHash   String
+  redirectUri String
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@map("auth_login_transactions")
+}

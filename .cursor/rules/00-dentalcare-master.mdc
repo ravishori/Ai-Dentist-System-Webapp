@@ -1,0 +1,107 @@
+---
+description: DentalCare AI master Cursor governance rules
+alwaysApply: true
+---
+
+# DentalCare AI — Cursor Master Project Rules
+
+## Authority
+The controlled source of truth is defined, in this order, by:
+1. Approved requirements and architecture/ADR documents, including TDA-ADR-001 (stack), TDA-ADR-002 (identity/tenant/authorization), and TDA-ADR-003 (managed identity provider) for this repository
+2. Domain specifications
+3. Database Design Documents (DDD)
+4. API specifications
+5. Security/privacy specifications
+6. QA/test strategy
+7. TDA-IMP-001 — Cursor Implementation & Delivery Plan
+8. TDA-IMP-M0-002 — Repository Baseline & Technology Stack Decision
+9. TDA-CURSOR-EXEC-001 — Cursor Master Execution Pack
+10. Existing source code — implementation evidence only
+11. Cursor inference — never overrides a controlled source
+
+Governance policy documents:
+- TDA-GOV-SOT-001 — Source-of-Truth Policy
+- TDA-GOV-CUR-001 — Cursor Project Rules
+- TDA-GOV-CMP-001 — Change Management Policy
+
+Cursor is an implementation assistant, not the autonomous source of business, architecture, security, or database truth.
+
+If two controlled sources materially conflict: STOP. Do not guess. Do not choose one silently. Report the conflict and identify the documents involved.
+
+For this repository (`Ai-Dentist-System-webapp`), TDA-ADR-001 records the stack reconciliation: Next.js/React/TypeScript + PostgreSQL/Prisma + Node.js worker + PostgreSQL outbox. TDA-TDD-001 v1.1 remains a REVIEW-stage historical document; its FastAPI/Python/Celery direction is not the live implementation order for this webapp.
+
+Identity, tenant isolation, RBAC, and object-level authorization follow TDA-ADR-002. TDA-ADR-003 selects Amazon Cognito user pools (Essentials) as the managed OIDC identity provider, used IdP-only behind `AuthenticationPort`. Do not implement a custom password system. Do not use Cognito groups, Auth0 Organizations, Clerk Organizations, or Supabase RLS as the application authorization source of truth. M1 implements authentication only; do not implement RBAC, tenant authorization, or business workflows until that milestone is requested.
+
+## Scope control
+- Inspect existing code before changing it.
+- Implement only the explicitly requested milestone.
+- Do not implement Patient, Appointment, Notification, or other business-domain functionality unless that milestone is explicitly requested.
+- Do not add speculative features.
+- Do not silently upgrade runtimes, frameworks, packages, or database technology.
+- Do not invent business rules when the controlled documentation is silent.
+- Keep domain rules out of controllers/endpoints.
+
+## Security
+- Never hard-code secrets, passwords, API keys, JWT secrets, SMTP/Twilio credentials, or production database credentials.
+- Never log secret values or unnecessary patient data.
+- Enforce tenant isolation and object-level authorization server-side.
+- Never trust client-supplied tenant identity.
+- Default deny.
+- Do not weaken security to make a test pass.
+
+## Tenant isolation
+- Tenant/organization context is derived from authenticated or trusted service context.
+- Every tenant-owned query and resource lookup must be scoped and authorized.
+- Background workers must carry tenant context.
+
+## Notification invariant
+- Never call SMTP/Twilio/external notification providers inside the originating business transaction.
+- Appointment mutation + history + audit + notification outbox = one database transaction.
+- Provider calls occur only after commit through the notification worker.
+
+## Git safety
+- Inspect git status before starting.
+- Never reset, clean, force-push, or rewrite history without explicit approval.
+- Never discard unrelated user work.
+- Keep commits small and milestone-oriented.
+- Do not commit unless explicitly requested.
+- Do not perform unauthorized commits.
+
+## Testing
+- Add or update automated tests with implementation changes.
+- Do not mark work complete solely because code compiles.
+- Failed mandatory tests are stop conditions.
+- Never use real patient data in local or CI environments.
+
+## Required workflow
+PLAN → PRECHECK → IMPLEMENT → TEST → REVIEW → REPORT
+
+Before implementation:
+- inspect Git status;
+- identify relevant source-of-truth documents;
+- identify exact scope and non-scope;
+- identify dependencies and risks.
+
+After implementation:
+- run relevant tests;
+- inspect diff;
+- verify no unrelated changes;
+- report files changed, tests run/results, DB/API/security impact, assumptions, risks, and next step.
+
+## Stop conditions
+STOP if:
+- source documents conflict;
+- a required business rule is undefined;
+- an approved architecture decision must change;
+- a destructive DB migration is required without approval;
+- a security control would be weakened;
+- mandatory tests fail;
+- tenant isolation cannot be proven;
+- appointment atomicity is violated;
+- notification provider calls occur inside a business transaction;
+- existing application code would be overwritten;
+- production credentials or real patient data would be required;
+- unrelated changes become necessary.
+
+## Definition of done
+A task is not complete merely because code compiles. It is complete only when implementation, tests, security requirements, relevant contracts, evidence, and traceability are satisfied.
