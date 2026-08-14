@@ -1,0 +1,56 @@
+{
+  "name": "dentalcare-ai",
+  "private": true,
+  "version": "0.0.0",
+  "description": "DentalCare AI — modular monolith web application and notification worker",
+  "packageManager": "pnpm@10.33.3",
+  "engines": {
+    "node": ">=22 <23",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "dev": "pnpm build:packages && pnpm --filter @dentalcare/web dev",
+    "dev:worker": "pnpm build:packages && pnpm --filter @dentalcare/worker dev",
+    "build": "pnpm build:packages && pnpm --filter @dentalcare/web build && pnpm --filter @dentalcare/worker build",
+    "build:packages": "pnpm --filter @dentalcare/db db:generate && pnpm --filter @dentalcare/config build && pnpm --filter @dentalcare/contracts build && pnpm --filter @dentalcare/domain build && pnpm --filter @dentalcare/application build && pnpm --filter @dentalcare/db build && pnpm --filter @dentalcare/test-utils build",
+    "build:web": "pnpm --filter @dentalcare/web build",
+    "build:worker": "pnpm --filter @dentalcare/worker build",
+    "lint": "eslint .",
+    "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @dentalcare/db db:generate",
+    "db:validate": "pnpm --filter @dentalcare/db db:validate",
+    "security:secrets": "bash scripts/check-secrets.sh",
+    "security:audit": "pnpm audit --prod"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "@eslint/eslintrc": "3.3.1",
+    "eslint-config-next": "15.5.23",
+    "@playwright/test": "1.55.1",
+    "@types/node": "22.19.21",
+    "eslint": "9.39.1",
+    "eslint-config-prettier": "10.1.8",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.46.4",
+    "vitest": "3.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp"
+    ],
+    "overrides": {
+      "postcss": "8.5.23",
+      "sharp": "0.35.3"
+    }
+  }
+}

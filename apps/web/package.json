@@ -1,0 +1,27 @@
+{
+  "name": "@dentalcare/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@dentalcare/application": "workspace:*",
+    "@dentalcare/config": "workspace:*",
+    "@dentalcare/contracts": "workspace:*",
+    "@dentalcare/db": "workspace:*",
+    "@dentalcare/domain": "workspace:*",
+    "next": "15.5.23",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

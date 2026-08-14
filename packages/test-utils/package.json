@@ -1,0 +1,23 @@
+{
+  "name": "@dentalcare/test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@dentalcare/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.21",
+    "typescript": "5.9.3"
+  }
+}

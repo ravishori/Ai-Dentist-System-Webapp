@@ -1,0 +1,11 @@
+node_modules
+.next
+dist
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+*.docx
+*.zip
+packages/db/src/generated
+.next
