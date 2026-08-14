@@ -243,3 +243,32 @@ Draft PR: https://github.com/ravishori/Ai-Dentist-System-Webapp/pull/5 (base: `c
 ## 13. Production readiness
 
 M4 is **not** production-ready unless production security, privacy, operational, infrastructure, and governance prerequisites have been independently reviewed and approved by the human.
+
+---
+
+## 14. Human Acceptance
+
+```text
+Status: ACCEPTED FOR DRAFT PR REVIEW — NOT PRODUCTION READY
+Approved by: Project Owner
+Role: Project Owner
+Date: 2026-08-15
+
+The human project owner has reviewed and accepts the completed M4 Appointment implementation as conforming to the approved M4 architecture decision record.
+
+This approval does not:
+- mark the system production-ready;
+- authorize merging the draft PR;
+- authorize M5 notification delivery;
+- authorize calendar, clinical, billing, or other future-domain work.
+```
+
+Reviewed scope:
+
+- Appointment create, list, read, reschedule, and cancel
+- Tenant-scoped staff, practitioner, and practice-admin access
+- PATIENT and SYSTEM_ADMIN denial
+- `REQUESTED` initial status
+- conflict prevention for active patient and practitioner appointments
+- history/audit and notification-outbox intent only
+- no DELETE, confirmation, check-in, calendar, or notification delivery
