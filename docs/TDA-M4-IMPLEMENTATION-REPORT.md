@@ -209,17 +209,17 @@ E2E: unauthenticated `GET /api/appointments` returns `401`.
 
 ## 11. Validation
 
-| Gate | Command | Result |
-|---|---|---|
-| Tests | `pnpm test` | PENDING |
-| Lint | `pnpm lint` | PENDING |
-| Format | `pnpm format:check` | PENDING |
-| Typecheck | `pnpm typecheck` | PENDING |
-| DB validation | `pnpm db:validate` | PENDING |
-| Build | `pnpm build` | PENDING |
-| Security audit | `pnpm security:audit` | PENDING |
-| Secrets | `pnpm security:secrets` | PENDING |
-| E2E | `CI=true pnpm test:e2e` | PENDING |
+| Gate           | Command                 | Result                                                          |
+| -------------- | ----------------------- | --------------------------------------------------------------- |
+| Tests          | `pnpm test`             | PASS (124 tests)                                                |
+| Lint           | `pnpm lint`             | PASS                                                            |
+| Format         | `pnpm format:check`     | PASS                                                            |
+| Typecheck      | `pnpm typecheck`        | PASS                                                            |
+| DB validation  | `pnpm db:validate`      | PASS                                                            |
+| Build          | `pnpm build`            | PASS (`/api/appointments`, `/api/appointments/[appointmentId]`) |
+| Security audit | `pnpm security:audit`   | PASS (no known vulnerabilities)                                 |
+| Secrets        | `pnpm security:secrets` | PASS                                                            |
+| E2E            | `CI=true pnpm test:e2e` | PASS (5 tests)                                                  |
 
 ---
 
@@ -227,7 +227,16 @@ E2E: unauthenticated `GET /api/appointments` returns `401`.
 
 Branch: `cursor/m4-appointment-domain-3efc` (from approved discovery `9183efe`). M0–M3 and discovery/approval commits intact.
 
-Draft PR base: `cursor/m4-appointment-discovery-3efc` (PR #4 remains discovery/approval only). Not merged.
+| Commit    | Message                                                          |
+| --------- | ---------------------------------------------------------------- |
+| `30f246c` | `feat(appointment): add appointment domain foundation`           |
+| `e85713b` | `feat(appointment): add scheduling integrity`                    |
+| `828e9e4` | `feat(appointment): add appointment authorization and lifecycle` |
+| `9c7d4b9` | `test(appointment): add security and concurrency coverage`       |
+| `ab010dc` | `docs(appointment): document m4 implementation`                  |
+| `3685c8a` | `fix(appointment): satisfy lint, format, and typecheck`          |
+
+Draft PR: https://github.com/ravishori/Ai-Dentist-System-Webapp/pull/5 (base: `cursor/m4-appointment-discovery-3efc`). Not merged. PR #4 remains discovery/approval only.
 
 ---
 
