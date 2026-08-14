@@ -8,7 +8,7 @@ export async function register(): Promise<void> {
   const logger = createLogger(config);
   logger.info("web application configuration loaded", {
     service: "web",
-    milestone: "M1",
+    milestone: "M2",
     nodeEnv: config.NODE_ENV,
     authProvider: config.AUTH_PROVIDER,
   });

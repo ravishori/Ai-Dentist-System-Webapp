@@ -6,6 +6,7 @@ export {
   PrismaSessionStore,
   PrismaUserIdentityDirectory,
 } from "./auth-stores.js";
+export { PrismaAuthorizationDirectory } from "./authz-stores.js";
 
 export function createPrismaClient(): PrismaClient {
   return new PrismaClient({
