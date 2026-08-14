@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("technical landing page loads", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "DentalCare AI" })).toBeVisible();
-  await expect(page.getByText("Appointment and Notification")).toBeVisible();
+  await expect(page.getByText("Notification product delivery")).toBeVisible();
 });
 
 test("health endpoint returns ok without business payload", async ({ request }) => {
@@ -17,7 +17,7 @@ test("health endpoint returns ok without business payload", async ({ request }) 
   expect(body).toMatchObject({
     status: "ok",
     service: "web",
-    milestone: "M3",
+    milestone: "M4",
   });
 });
 
@@ -32,6 +32,15 @@ test("authorization probe denies unauthenticated access", async ({ request }) =>
 
 test("patient API denies unauthenticated access", async ({ request }) => {
   const response = await request.get("/api/patients", {
+    headers: { "x-organization-id": "org_untrusted" },
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
+});
+
+test("appointment API denies unauthenticated access", async ({ request }) => {
+  const response = await request.get("/api/appointments", {
     headers: { "x-organization-id": "org_untrusted" },
   });
   expect(response.status()).toBe(401);

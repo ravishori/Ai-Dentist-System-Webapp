@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DentalCare AI",
-  description: "DentalCare AI application shell (M3 patient domain foundation)",
+  description: "DentalCare AI application shell (M4 appointment domain)",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
