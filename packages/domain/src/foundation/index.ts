@@ -29,14 +29,17 @@ export {
 export {
   FOUNDATION_PERMISSIONS,
   PATIENT_PERMISSIONS,
+  APPOINTMENT_PERMISSIONS,
   APPLICATION_PERMISSIONS,
   PLATFORM_PERMISSIONS,
   isFoundationPermission,
   isPatientPermission,
+  isAppointmentPermission,
   isApplicationPermission,
   isPlatformPermission,
   type FoundationPermission,
   type PatientPermission,
+  type AppointmentPermission,
   type ApplicationPermission,
   type PlatformPermission,
 } from "./permissions.js";
