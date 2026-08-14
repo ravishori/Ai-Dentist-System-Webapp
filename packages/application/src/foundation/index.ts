@@ -31,3 +31,15 @@ export {
   type SessionRecord,
   type CognitoOidcAdapterDependencies,
 } from "./auth/index.js";
+export {
+  RbacAuthorizationAdapter,
+  InMemoryAuthorizationDirectory,
+  createAuthorizationPort,
+  handleOrganizationAuthorizeGet,
+  type AuthorizationDirectory,
+  type AuthorizationUserRecord,
+  type OrganizationRecord,
+  type MembershipRecord,
+  type MembershipStatus,
+  type RecordStatus,
+} from "./authz/index.js";

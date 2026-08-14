@@ -17,6 +17,15 @@ test("health endpoint returns ok without business payload", async ({ request }) 
   expect(body).toMatchObject({
     status: "ok",
     service: "web",
-    milestone: "M1",
+    milestone: "M2",
   });
+});
+
+test("authorization probe denies unauthenticated access", async ({ request }) => {
+  const response = await request.get("/api/authz/organization", {
+    headers: { "x-organization-id": "org_untrusted" },
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
 });
