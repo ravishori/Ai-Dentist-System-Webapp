@@ -35,12 +35,12 @@ Authoritative ADR: `docs/adr/TDA-ADR-001_Technology-Stack-and-Architecture-Recon
 
 ## Identity provider (M1)
 
-TDA-ADR-003 selects **Amazon Cognito user pools, Essentials plan**, as the managed OIDC identity provider behind `AuthenticationPort`. JWT verification uses `jose` (no AWS SDK). The application remains the source of truth for tenant context, membership, RBAC, and object-level authorization. M2 implements the authorization evaluation engine. See `docs/TDA-M2-AUTHORIZATION-CONTRACT.md`.
+TDA-ADR-003 selects **Amazon Cognito user pools, Essentials plan**, as the managed OIDC identity provider behind `AuthenticationPort`. JWT verification uses `jose` (no AWS SDK). The application remains the source of truth for tenant context, membership, RBAC, and object-level authorization. M2 implements the authorization evaluation engine. M3 binds organization-scoped patient identity to that engine. See `docs/TDA-M2-AUTHORIZATION-CONTRACT.md` and `docs/TDA-M3-PATIENT-CONTRACT.md`.
 
-## Explicit non-selections at M0 / M1 / M2
+## Explicit non-selections at M0 / M1 / M2 / M3
 
 - No custom authentication/password system
 - No AWS Cognito SDK (OIDC/jose only)
 - No Cognito groups as the application authorization model
-- No Patient / Appointment / Notification business schema or UI
+- No Appointment / Notification / clinical-record business schema or UI
 - No production deployment topology

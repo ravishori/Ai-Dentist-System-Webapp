@@ -2,7 +2,7 @@
 
 Implementation-ready TypeScript web application repository for the Dental Appointment Management System.
 
-This repository is a **modular monolith** with a separate notification worker. M0 establishes tooling and application shells only. Patient, Appointment, and Notification business behavior is out of scope until later milestones.
+This repository is a **modular monolith** with a separate notification worker. M0–M2 establish tooling, authentication, and organization-tenant authorization. M3 adds organization-scoped patient identity. Appointment and Notification business behavior remains out of scope until later milestones.
 
 ## Technology baseline (TDA-IMP-M0-002 / TDA-ADR-001)
 
@@ -78,14 +78,15 @@ Controlled Word/PDF source documents remain at the repository root and must be p
 
 - Commit `.env.example` only. Never commit secrets.
 - Configuration fails fast on missing mandatory values and does not print secret values.
-- Authentication uses Amazon Cognito User Pools behind `AuthenticationPort` (TDA-ADR-003). Authorization uses application-owned membership/RBAC behind `AuthorizationPort` (TDA-ADR-002). Clinical workflows are not implemented.
+- Authentication uses Amazon Cognito User Pools behind `AuthenticationPort` (TDA-ADR-003). Authorization uses application-owned membership/RBAC behind `AuthorizationPort` (TDA-ADR-002). Patient records are organization-scoped and authorized object-by-object. Appointment and other clinical workflows are not implemented.
 - Formal security hardening is M5.
 
 ## Milestones
 
-| ID    | Scope                                                           |
-| ----- | --------------------------------------------------------------- |
-| M0    | Repository & tooling baseline                                   |
-| M1    | Authentication foundation                                       |
-| M2    | Authorization & organization/tenant foundation (this increment) |
-| later | Patient (TDA-IMP-M2-001), Appointment, Notification, hardening  |
+| ID    | Scope                                          |
+| ----- | ---------------------------------------------- |
+| M0    | Repository & tooling baseline                  |
+| M1    | Authentication foundation                      |
+| M2    | Authorization & organization/tenant foundation |
+| M3    | Patient domain foundation (this increment)     |
+| later | Appointment, Notification, hardening           |
