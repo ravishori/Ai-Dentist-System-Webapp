@@ -27,12 +27,22 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "patient.create",
       "patient.read.tenant",
       "patient.update.tenant",
+      "appointment.create",
+      "appointment.read.tenant",
+      "appointment.update.tenant",
+      "appointment.reschedule",
+      "appointment.cancel",
     ]);
     this.rolePermissions.set("PRACTITIONER", [
       "organization.read",
       "patient.create",
       "patient.read.tenant",
       "patient.update.tenant",
+      "appointment.create",
+      "appointment.read.tenant",
+      "appointment.update.tenant",
+      "appointment.reschedule",
+      "appointment.cancel",
     ]);
     this.rolePermissions.set("PRACTICE_ADMIN", [
       "organization.read",
@@ -43,6 +53,11 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "patient.read.tenant",
       "patient.update.tenant",
       "patient.archive",
+      "appointment.create",
+      "appointment.read.tenant",
+      "appointment.update.tenant",
+      "appointment.reschedule",
+      "appointment.cancel",
     ]);
     this.rolePermissions.set("SYSTEM_ADMIN", [
       "organization.read",

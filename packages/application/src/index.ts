@@ -55,3 +55,18 @@ export {
   parseCreateInput,
   parseUpdateInput,
 } from "./patient/index.js";
+export {
+  AppointmentApplicationService,
+  toPublicAppointment,
+  handleAppointmentCreate,
+  handleAppointmentList,
+  handleAppointmentGet,
+  handleAppointmentPatch,
+  handleAppointmentReschedule,
+  handleAppointmentCancel,
+  InMemoryAppointmentRepository,
+  InMemoryPractitionerRepository,
+  InMemoryBranchLookup,
+  parseCreateInput as parseAppointmentCreateInput,
+  parseRescheduleInput,
+} from "./appointment/index.js";
