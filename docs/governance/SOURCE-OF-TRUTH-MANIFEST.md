@@ -55,4 +55,4 @@ TDA-TDD-001 v1.1 remains in the repository as a REVIEW-stage/provisional documen
 
 See `docs/adr/TDA-ADR-001_Technology-Stack-and-Architecture-Reconciliation_v1.0.md`.
 
-Identity architecture for M1 is recorded in **TDA-ADR-002 v1.0**. The managed identity provider is recorded in **TDA-ADR-003 v1.0** (Amazon Cognito user pools, Essentials, IdP-only). M1 implements authentication behind `AuthenticationPort`. Do not implement RBAC or business authorization in M1. See `docs/TDA-M1-AUTHENTICATION-CONTRACT.md` and `docs/ADR-FOLLOWUP-M1.md`.
+Identity architecture for M1 is recorded in **TDA-ADR-002 v1.0**. The managed identity provider is recorded in **TDA-ADR-003 v1.0** (Amazon Cognito user pools, Essentials, IdP-only). M1 implements authentication behind `AuthenticationPort`. M2 implements organization/membership/RBAC behind `AuthorizationPort`. See `docs/TDA-M2-AUTHORIZATION-CONTRACT.md` and `docs/ADR-FOLLOWUP-M2.md`. Patient (TDA-IMP-M2-001) is not started.

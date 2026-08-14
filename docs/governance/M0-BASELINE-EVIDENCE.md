@@ -74,4 +74,4 @@ TDA-ADR-001 v1.0 records the FastAPI/Python vs Next.js/TypeScript conflict and t
 
 ## Next milestone
 
-M1 authentication foundation is implemented behind `AuthenticationPort`. Authorization/RBAC and Patient (M2) are not started. Production Cognito configuration remains human-owned.
+M1 authentication and M2 authorization/tenant foundation are implemented. Patient (TDA-IMP-M2-001) is not started. Production Cognito configuration remains human-owned.

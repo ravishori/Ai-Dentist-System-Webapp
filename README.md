@@ -78,18 +78,14 @@ Controlled Word/PDF source documents remain at the repository root and must be p
 
 - Commit `.env.example` only. Never commit secrets.
 - Configuration fails fast on missing mandatory values and does not print secret values.
-- Authentication uses Amazon Cognito User Pools behind `AuthenticationPort` (TDA-ADR-003). Authorization, RBAC, and clinical workflows are not implemented in M1.
+- Authentication uses Amazon Cognito User Pools behind `AuthenticationPort` (TDA-ADR-003). Authorization uses application-owned membership/RBAC behind `AuthorizationPort` (TDA-ADR-002). Clinical workflows are not implemented.
 - Formal security hardening is M5.
 
 ## Milestones
 
-| ID  | Scope                                     |
-| --- | ----------------------------------------- |
-| M0  | Repository & tooling baseline (this work) |
-| M1  | Foundation & Identity                     |
-| M2  | Patient                                   |
-| M3  | Appointment                               |
-| M4  | Notification                              |
-| M5  | Security hardening                        |
-| M6  | E2E & operations                          |
-| M7  | Production readiness                      |
+| ID    | Scope                                                           |
+| ----- | --------------------------------------------------------------- |
+| M0    | Repository & tooling baseline                                   |
+| M1    | Authentication foundation                                       |
+| M2    | Authorization & organization/tenant foundation (this increment) |
+| later | Patient (TDA-IMP-M2-001), Appointment, Notification, hardening  |
