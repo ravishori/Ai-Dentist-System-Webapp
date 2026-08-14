@@ -4,7 +4,7 @@
 
 **Document ID:** TDA-ADR-FOLLOWUP-M4  
 **Version:** 1.0  
-**Status:** PROPOSED — AWAITING HUMAN APPROVAL  
+**Status:** APPROVED  
 **Date:** 2026-08-14  
 **Milestone:** M4 — Appointment Domain  
 **Supersedes:** M4 Discovery Blockers recorded in `docs/TDA-M4-APPOINTMENT-DISCOVERY.md`  
@@ -1260,7 +1260,7 @@ The human must confirm that:
 ## Approval Status
 
 ```text
-PROPOSED — AWAITING HUMAN APPROVAL
+APPROVED
 ```
 
 After review, the human may change this section to:
@@ -1272,9 +1272,9 @@ APPROVED
 ## Approved By
 
 ```text
-Name:
+Name: Project Owner
 Role: Project Owner
-Date:
+Date: 2026-08-15
 ```
 
 ## Human Approval Statement
@@ -1291,7 +1291,7 @@ I understand that:
 ```text
 Human Approval:
 
-[ ] APPROVED
+[x] APPROVED
 [ ] NOT APPROVED
 ```
 
