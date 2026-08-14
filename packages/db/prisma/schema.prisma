@@ -5,7 +5,8 @@
 //
 // M1: authentication identity-mapping and session persistence.
 // M2: organization/tenant, membership, RBAC catalog, security event log.
-// M3: organization-scoped patient identity (not clinical records).
+// M3: organization-scoped patient identity.
+// M4: organization-scoped appointments and minimum practitioner profiles.
 
 generator client {
   provider = "prisma-client-js"
@@ -27,6 +28,7 @@ model User {
   sessions      AuthSession[]
   memberships   Membership[]
   platformRoles UserPlatformRole[]
+  practitioners Practitioner[]
 
   @@map("users")
 }
@@ -82,8 +84,10 @@ model Organization {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   branches    Branch[]
-  memberships Membership[]
-  patients    Patient[]
+  memberships   Membership[]
+  patients      Patient[]
+  practitioners Practitioner[]
+  appointments  Appointment[]
 
   @@map("organizations")
 }
@@ -97,6 +101,7 @@ model Branch {
   updatedAt      DateTime     @updatedAt
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   memberships    Membership[]
+  appointments   Appointment[]
 
   @@index([organizationId])
   @@map("branches")
@@ -201,7 +206,78 @@ model Patient {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  appointments   Appointment[]
 
   @@index([organizationId])
   @@map("patients")
+}
+
+model Practitioner {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String       @unique
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+  appointments   Appointment[]
+
+  @@index([organizationId])
+  @@map("practitioners")
+}
+
+model Appointment {
+  id             String       @id @default(cuid())
+  organizationId String
+  branchId       String
+  patientId      String
+  practitionerId String
+  startAtUtc     DateTime     @db.Timestamptz
+  endAtUtc       DateTime     @db.Timestamptz
+  timezone       String
+  status         String       @default("REQUESTED")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  branch         Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  patient        Patient      @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  practitioner   Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Restrict)
+  history        AppointmentHistory[]
+  outbox         NotificationOutbox[]
+
+  @@index([organizationId, startAtUtc])
+  @@index([organizationId, status])
+  @@index([organizationId, patientId, startAtUtc])
+  @@index([organizationId, practitionerId, startAtUtc])
+  @@map("appointments")
+}
+
+model AppointmentHistory {
+  id             String      @id @default(cuid())
+  appointmentId  String
+  organizationId String
+  eventType      String
+  fromStatus     String?
+  toStatus       String
+  actorUserId    String
+  createdAt      DateTime    @default(now())
+  appointment    Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  @@index([appointmentId, createdAt])
+  @@index([organizationId])
+  @@map("appointment_history")
+}
+
+model NotificationOutbox {
+  id             String      @id @default(cuid())
+  organizationId String
+  appointmentId  String
+  eventType      String
+  status         String      @default("pending")
+  createdAt      DateTime    @default(now())
+  appointment    Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
+  @@index([organizationId, status])
+  @@map("notification_outbox")
 }
