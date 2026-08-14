@@ -30,7 +30,7 @@ If two controlled sources materially conflict: STOP. Do not guess. Do not choose
 
 For this repository (`Ai-Dentist-System-webapp`), TDA-ADR-001 records the stack reconciliation: Next.js/React/TypeScript + PostgreSQL/Prisma + Node.js worker + PostgreSQL outbox. TDA-TDD-001 v1.1 remains a REVIEW-stage historical document; its FastAPI/Python/Celery direction is not the live implementation order for this webapp.
 
-Identity, tenant isolation, RBAC, and object-level authorization follow TDA-ADR-002. TDA-ADR-003 proposes Amazon Cognito user pools (Essentials) as the managed OIDC identity provider, used IdP-only behind `AuthenticationPort`. Do not implement a custom password system. Do not add vendor SDKs or login flows until TDA-ADR-003 is human-approved. Never trust client-supplied tenant, organization, role, or permission values. Do not use Cognito groups, Auth0 Organizations, Clerk Organizations, or Supabase RLS as the application authorization source of truth.
+Identity, tenant isolation, RBAC, and object-level authorization follow TDA-ADR-002. TDA-ADR-003 selects Amazon Cognito user pools (Essentials) as the managed OIDC identity provider, used IdP-only behind `AuthenticationPort`. Do not implement a custom password system. Do not use Cognito groups, Auth0 Organizations, Clerk Organizations, or Supabase RLS as the application authorization source of truth. M1 implements authentication only; do not implement RBAC, tenant authorization, or business workflows until that milestone is requested.
 
 ## Scope control
 - Inspect existing code before changing it.

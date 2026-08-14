@@ -1,6 +1,7 @@
 # Prisma migrations
 
-M0 establishes PostgreSQL + Prisma as the schema evolution mechanism.
+M0 established PostgreSQL + Prisma as the schema evolution mechanism.
 
-No domain tables are created in this milestone. The first business/foundation
-migration is owned by M1 and later DDD-aligned milestones.
+M1 adds authentication identity mapping (`users`, `user_identities`) and
+application session/login-transaction tables. It does not add Organization,
+Membership, Role, Permission, Patient, Appointment, or Notification tables.

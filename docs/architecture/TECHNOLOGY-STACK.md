@@ -33,15 +33,14 @@ Authoritative ADR: `docs/adr/TDA-ADR-001_Technology-Stack-and-Architecture-Recon
 - Notification path: business transaction → PostgreSQL outbox → worker → provider adapter → SMTP/Twilio
 - No microservices, Redis, Kafka, RabbitMQ, or other brokers in M0
 
-## Identity provider (proposed)
+## Identity provider (M1)
 
-TDA-ADR-003 v1.0 (PROPOSED — READY FOR HUMAN APPROVAL) selects **Amazon Cognito user pools, Essentials plan**, as the managed OIDC identity provider. The application remains the source of truth for tenant context, membership, RBAC, and object-level authorization. See `docs/adr/TDA-ADR-003_Managed-Identity-Provider-Selection_v1.0.md`.
+TDA-ADR-003 selects **Amazon Cognito user pools, Essentials plan**, as the managed OIDC identity provider behind `AuthenticationPort`. JWT verification uses `jose` (no AWS SDK). The application remains the source of truth for tenant context, membership, RBAC, and object-level authorization (not implemented in M1). See `docs/TDA-M1-AUTHENTICATION-CONTRACT.md`.
 
-Do not add Cognito/Auth0/Clerk SDKs, login routes, or identity tables until that ADR is human-approved.
-
-## Explicit non-selections at M0
+## Explicit non-selections at M0 / M1
 
 - No custom authentication/password system
-- No managed auth provider deep integration (vendor named in TDA-ADR-003; not implemented in M0)
+- No AWS Cognito SDK (OIDC/jose only)
+- No RBAC / tenant authorization in M1
 - No Patient / Appointment / Notification business schema or UI
 - No production deployment topology

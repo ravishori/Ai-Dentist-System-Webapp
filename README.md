@@ -78,7 +78,7 @@ Controlled Word/PDF source documents remain at the repository root and must be p
 
 - Commit `.env.example` only. Never commit secrets.
 - Configuration fails fast on missing mandatory values and does not print secret values.
-- Authentication provider selection is recorded in TDA-ADR-003 (PROPOSED): Amazon Cognito user pools (Essentials), IdP-only. Do not integrate until human approval.
+- Authentication uses Amazon Cognito User Pools behind `AuthenticationPort` (TDA-ADR-003). Authorization, RBAC, and clinical workflows are not implemented in M1.
 - Formal security hardening is M5.
 
 ## Milestones

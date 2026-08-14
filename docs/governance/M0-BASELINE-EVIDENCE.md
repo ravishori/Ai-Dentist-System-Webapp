@@ -74,4 +74,4 @@ TDA-ADR-001 v1.0 records the FastAPI/Python vs Next.js/TypeScript conflict and t
 
 ## Next milestone
 
-M1 — Foundation & Identity, after human approval of TDA-ADR-001, TDA-ADR-002, and TDA-ADR-003. Do not add vendor SDKs before that approval.
+M1 authentication foundation is implemented behind `AuthenticationPort`. Authorization/RBAC and Patient (M2) are not started. Production Cognito configuration remains human-owned.
