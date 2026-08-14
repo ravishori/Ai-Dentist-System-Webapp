@@ -194,6 +194,37 @@ E2E: unauthenticated `GET /api/patients` returns `401`.
 
 ---
 
-## 11. Production readiness
+## 11. Validation
+
+| Gate | Command | Result |
+|---|---|---|
+| Tests | `pnpm test` | PASS (94 tests) |
+| Lint | `pnpm lint` | PASS |
+| Format | `pnpm format:check` | PASS |
+| Typecheck | `pnpm typecheck` | PASS |
+| DB validation | `pnpm db:validate` | PASS |
+| Build | `pnpm build` | PASS (`/api/patients`, `/api/patients/[patientId]`) |
+| Security audit | `pnpm security:audit` | PASS (no known vulnerabilities) |
+| Secrets | `pnpm security:secrets` | PASS |
+| E2E | `CI=true pnpm test:e2e` | PASS (4 tests) |
+
+---
+
+## 12. Git
+
+Branch: `cursor/m3-patient-domain-3efc` (from frozen M2 `eff66e5`). M1 and M2 commits intact.
+
+| Commit | Message |
+|---|---|
+| `9608376` | `feat(patient): add patient domain foundation` |
+| `c19ad5f` | `feat(patient): add patient authorization and scoped access` |
+| `bc18356` | `test(patient): add patient security and bola coverage` |
+| `f35d3b0` | `docs(patient): document m3 patient foundation` |
+
+Draft PR: https://github.com/ravishori/Ai-Dentist-System-Webapp/pull/3 (base: `cursor/m2-authorization-foundation-3efc`). Not merged.
+
+---
+
+## 13. Production readiness
 
 M3 is **not** production-ready unless production security, privacy, operational, infrastructure, and governance prerequisites have been independently reviewed and approved by the human.
