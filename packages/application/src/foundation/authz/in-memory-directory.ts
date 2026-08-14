@@ -22,13 +22,27 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
 
   constructor() {
     this.rolePermissions.set("PATIENT", ["organization.read"]);
-    this.rolePermissions.set("STAFF", ["organization.read"]);
-    this.rolePermissions.set("PRACTITIONER", ["organization.read"]);
+    this.rolePermissions.set("STAFF", [
+      "organization.read",
+      "patient.create",
+      "patient.read.tenant",
+      "patient.update.tenant",
+    ]);
+    this.rolePermissions.set("PRACTITIONER", [
+      "organization.read",
+      "patient.create",
+      "patient.read.tenant",
+      "patient.update.tenant",
+    ]);
     this.rolePermissions.set("PRACTICE_ADMIN", [
       "organization.read",
       "membership.manage",
       "role.assign",
       "audit.read",
+      "patient.create",
+      "patient.read.tenant",
+      "patient.update.tenant",
+      "patient.archive",
     ]);
     this.rolePermissions.set("SYSTEM_ADMIN", [
       "organization.read",

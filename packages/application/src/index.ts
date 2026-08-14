@@ -44,3 +44,14 @@ export {
   type MembershipStatus,
   type RecordStatus,
 } from "./foundation/index.js";
+export {
+  PatientApplicationService,
+  toPublicPatient,
+  handlePatientCreate,
+  handlePatientList,
+  handlePatientGet,
+  handlePatientPatch,
+  InMemoryPatientRepository,
+  parseCreateInput,
+  parseUpdateInput,
+} from "./patient/index.js";

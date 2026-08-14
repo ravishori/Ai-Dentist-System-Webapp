@@ -15,14 +15,14 @@ export async function startWorker(options: WorkerRuntimeOptions): Promise<void> 
   const processors = createProcessorRegistry();
   options.logger.info("notification worker starting", {
     service: "worker",
-    milestone: "M2",
+    milestone: "M3",
     nodeEnv: options.config.NODE_ENV,
     authProvider: options.config.AUTH_PROVIDER,
     registeredProcessors: processors.list(),
   });
   options.logger.info("notification worker ready", {
     processingEnabled: false,
-    note: "Notification outbox processing is deferred to M4",
+    note: "Notification outbox processing is not implemented in this milestone",
   });
 
   const wait = options.waitForSignal ?? defaultWaitForSignal;
