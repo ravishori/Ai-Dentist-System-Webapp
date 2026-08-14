@@ -9,7 +9,10 @@ export interface AppointmentWriteContext {
 
 export interface AppointmentRepository {
   create(context: AppointmentWriteContext, input: AppointmentCreateInput): Promise<Appointment>;
-  findByOrganizationAndId(organizationId: string, appointmentId: string): Promise<Appointment | null>;
+  findByOrganizationAndId(
+    organizationId: string,
+    appointmentId: string,
+  ): Promise<Appointment | null>;
   listByOrganization(
     organizationId: string,
     filter?: AppointmentListFilter,

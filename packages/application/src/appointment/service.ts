@@ -265,10 +265,20 @@ export class AppointmentApplicationService {
 
 function mapWriteError(error: unknown): AppointmentServiceFailure {
   if (error instanceof AppointmentConflictError) {
-    return { ok: false, status: 409, error: "conflict", message: "Appointment scheduling conflict." };
+    return {
+      ok: false,
+      status: 409,
+      error: "conflict",
+      message: "Appointment scheduling conflict.",
+    };
   }
   if (error instanceof AppointmentTransitionError) {
-    return { ok: false, status: 400, error: "invalid_input", message: "Appointment transition is not allowed." };
+    return {
+      ok: false,
+      status: 400,
+      error: "invalid_input",
+      message: "Appointment transition is not allowed.",
+    };
   }
   if (error instanceof AppointmentValidationError) {
     return invalid();
@@ -292,7 +302,12 @@ function notFound(): AppointmentServiceFailure {
 }
 
 function invalid(): AppointmentServiceFailure {
-  return { ok: false, status: 400, error: "invalid_input", message: "Appointment input was invalid." };
+  return {
+    ok: false,
+    status: 400,
+    error: "invalid_input",
+    message: "Appointment input was invalid.",
+  };
 }
 
 function unavailable(): AppointmentServiceFailure {

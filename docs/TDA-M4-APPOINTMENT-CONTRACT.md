@@ -41,11 +41,11 @@ Application User  ≠  Patient  ≠  Practitioner Profile
 
 M4 implements a **minimum Practitioner Profile** (M4-01):
 
-| Field            | Notes                                      |
-| ---------------- | ------------------------------------------ |
+| Field            | Notes                                       |
+| ---------------- | ------------------------------------------- |
 | `id`             | cuid; this is `appointments.practitionerId` |
-| `organizationId` | owning organization                        |
-| `userId`         | 0..1 link to an application user (unique)  |
+| `organizationId` | owning organization                         |
+| `userId`         | 0..1 link to an application user (unique)   |
 
 There is **no** public practitioner HTTP API in M4. Tests and operators seed profiles through the repository. Practitioner licensing, availability, leave, and portal are deferred.
 
@@ -55,19 +55,19 @@ A Cognito `sub` or M1 `userId` is not an appointment practitioner identifier.
 
 ## 3. Appointment identity model
 
-| Field            | Type         | Required | Notes                                      |
-| ---------------- | ------------ | -------- | ------------------------------------------ |
-| `id`             | cuid         | yes      | Opaque identifier; not sequential          |
-| `organizationId` | cuid         | yes      | Owning organization; immutable             |
-| `branchId`       | cuid         | yes      | Same organization; no branch-level auth    |
-| `patientId`      | cuid         | yes      | Same-organization patient                  |
-| `practitionerId` | cuid         | yes      | Practitioner profile id, not Cognito/`userId` |
-| `startAtUtc`     | ISO instant  | yes      | Stored as timestamptz                      |
-| `endAtUtc`       | ISO instant  | yes      | Must be strictly after `startAtUtc`        |
-| `timezone`       | IANA name    | yes      | Required; abbreviations such as IST/EST rejected |
-| `status`         | closed set   | yes      | Default `REQUESTED`                        |
-| `createdAt`      | DateTime     | yes      | Set by persistence                         |
-| `updatedAt`      | DateTime     | yes      | Set by persistence                         |
+| Field            | Type        | Required | Notes                                            |
+| ---------------- | ----------- | -------- | ------------------------------------------------ |
+| `id`             | cuid        | yes      | Opaque identifier; not sequential                |
+| `organizationId` | cuid        | yes      | Owning organization; immutable                   |
+| `branchId`       | cuid        | yes      | Same organization; no branch-level auth          |
+| `patientId`      | cuid        | yes      | Same-organization patient                        |
+| `practitionerId` | cuid        | yes      | Practitioner profile id, not Cognito/`userId`    |
+| `startAtUtc`     | ISO instant | yes      | Stored as timestamptz                            |
+| `endAtUtc`       | ISO instant | yes      | Must be strictly after `startAtUtc`              |
+| `timezone`       | IANA name   | yes      | Required; abbreviations such as IST/EST rejected |
+| `status`         | closed set  | yes      | Default `REQUESTED`                              |
+| `createdAt`      | DateTime    | yes      | Set by persistence                               |
+| `updatedAt`      | DateTime    | yes      | Set by persistence                               |
 
 Statuses stored: `REQUESTED`, `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`, `COMPLETED`, `NO_SHOW`, `CANCELLED`.
 
@@ -118,13 +118,13 @@ Cross-tenant GET / PATCH / cancel / reschedule of a foreign id returns the same 
 
 ## 6. Permissions
 
-| Permission                   | Meaning                                      |
-| ---------------------------- | -------------------------------------------- |
-| `appointment.create`         | Create an appointment in the organization    |
-| `appointment.read.tenant`    | List and read appointments in the organization |
-| `appointment.update.tenant`  | Authorize PATCH lookup (no mutable fields)   |
-| `appointment.reschedule`     | Change schedule via reschedule command       |
-| `appointment.cancel`         | Cancel an appointment                        |
+| Permission                  | Meaning                                        |
+| --------------------------- | ---------------------------------------------- |
+| `appointment.create`        | Create an appointment in the organization      |
+| `appointment.read.tenant`   | List and read appointments in the organization |
+| `appointment.update.tenant` | Authorize PATCH lookup (no mutable fields)     |
+| `appointment.reschedule`    | Change schedule via reschedule command         |
+| `appointment.cancel`        | Cancel an appointment                          |
 
 Not seeded / not evaluated:
 
@@ -146,14 +146,14 @@ Appointment authorization uses `AuthorizationPort.authorize()`. Appointment appl
 
 ## 7. API contract
 
-| Method | Path                                      | Permission                   | Notes |
-| ------ | ----------------------------------------- | ---------------------------- | ----- |
-| `POST` | `/api/appointments`                       | `appointment.create`         | Create; status `REQUESTED` |
-| `GET`  | `/api/appointments`                       | `appointment.read.tenant`    | Optional filters: `patientId`, `practitionerId`, `branchId`, `status` |
-| `GET`  | `/api/appointments/:appointmentId`        | `appointment.read.tenant`    | Scoped read |
-| `PATCH`| `/api/appointments/:appointmentId`        | `appointment.update.tenant`  | Lookup then `400`; no mutable fields |
-| `POST` | `/api/appointments/:appointmentId/reschedule` | `appointment.reschedule` | Schedule change |
-| `POST` | `/api/appointments/:appointmentId/cancel` | `appointment.cancel`         | Status → `CANCELLED` |
+| Method  | Path                                          | Permission                  | Notes                                                                 |
+| ------- | --------------------------------------------- | --------------------------- | --------------------------------------------------------------------- |
+| `POST`  | `/api/appointments`                           | `appointment.create`        | Create; status `REQUESTED`                                            |
+| `GET`   | `/api/appointments`                           | `appointment.read.tenant`   | Optional filters: `patientId`, `practitionerId`, `branchId`, `status` |
+| `GET`   | `/api/appointments/:appointmentId`            | `appointment.read.tenant`   | Scoped read                                                           |
+| `PATCH` | `/api/appointments/:appointmentId`            | `appointment.update.tenant` | Lookup then `400`; no mutable fields                                  |
+| `POST`  | `/api/appointments/:appointmentId/reschedule` | `appointment.reschedule`    | Schedule change                                                       |
+| `POST`  | `/api/appointments/:appointmentId/cancel`     | `appointment.cancel`        | Status → `CANCELLED`                                                  |
 
 No `DELETE`. No confirm / check-in / start / complete / no-show / history HTTP routes. No practitioner management routes. Prefix is `/api/...`, not `/api/v1`.
 
@@ -200,14 +200,14 @@ Appointment JSON:
 
 ### 7.5 Error responses
 
-| Status | Code              | Typical cause                              |
-| ------ | ----------------- | ------------------------------------------ |
+| Status | Code              | Typical cause                                                           |
+| ------ | ----------------- | ----------------------------------------------------------------------- |
 | 400    | `invalid_input`   | Validation / invalid transition / inactive patient / foreign related id |
-| 401    | `unauthenticated` | Missing or invalid session                 |
-| 403    | `forbidden`       | Authenticated but not authorized           |
-| 404    | `not_found`       | Missing appointment **or** cross-tenant id |
-| 409    | `conflict`        | Overlapping active practitioner or patient slot |
-| 503    | `unavailable`     | Persistence / side-effect failure          |
+| 401    | `unauthenticated` | Missing or invalid session                                              |
+| 403    | `forbidden`       | Authenticated but not authorized                                        |
+| 404    | `not_found`       | Missing appointment **or** cross-tenant id                              |
+| 409    | `conflict`        | Overlapping active practitioner or patient slot                         |
+| 503    | `unavailable`     | Persistence / side-effect failure                                       |
 
 Denied responses do not include patient names, emails, phones, dates of birth, appointment times, practitioner identity, or branch information.
 
@@ -258,17 +258,17 @@ They must not record:
 
 ## 11. Explicitly deferred
 
-| Topic                         | Status                                      |
-| ----------------------------- | ------------------------------------------- |
-| Confirm / check-in / complete | Deferred (statuses exist in DB only)        |
-| Practitioner management API   | Deferred                                    |
-| Branch-level authorization    | Deferred (M4-02)                            |
-| PATIENT self-access           | Denied (M4-08)                              |
-| SYSTEM_ADMIN appointment path | Denied (M4-09)                              |
-| Calendar integration          | Deferred (M4-18)                            |
-| Notification delivery         | Deferred (M4-19); outbox intent only        |
-| Hard deletion                 | Not implemented                             |
-| Clinical domains              | Future milestones                           |
+| Topic                         | Status                               |
+| ----------------------------- | ------------------------------------ |
+| Confirm / check-in / complete | Deferred (statuses exist in DB only) |
+| Practitioner management API   | Deferred                             |
+| Branch-level authorization    | Deferred (M4-02)                     |
+| PATIENT self-access           | Denied (M4-08)                       |
+| SYSTEM_ADMIN appointment path | Denied (M4-09)                       |
+| Calendar integration          | Deferred (M4-18)                     |
+| Notification delivery         | Deferred (M4-19); outbox intent only |
+| Hard deletion                 | Not implemented                      |
+| Clinical domains              | Future milestones                    |
 
 ---
 

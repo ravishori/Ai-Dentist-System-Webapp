@@ -399,9 +399,10 @@ describe("appointment authorization and BOLA", () => {
     const created = await h.service.create(identity(STAFF_A), ORG_A, createBody(seed));
     expect(created.ok).toBe(true);
     if (!created.ok) return;
-    await expect(
-      h.service.get(identity(REVOKED), ORG_A, created.data.id),
-    ).resolves.toMatchObject({ ok: false, status: 403 });
+    await expect(h.service.get(identity(REVOKED), ORG_A, created.data.id)).resolves.toMatchObject({
+      ok: false,
+      status: 403,
+    });
   });
 
   it("disabled user cannot create appointments", async () => {
@@ -668,7 +669,7 @@ describe("M4 schema constraints", () => {
     expect(sql).toContain("CREATE EXTENSION IF NOT EXISTS btree_gist");
     expect(sql).toContain("appointments_practitioner_time_excl");
     expect(sql).toContain("appointments_patient_time_excl");
-    expect(sql).toContain("tstzrange(\"startAtUtc\", \"endAtUtc\", '[)')");
+    expect(sql).toContain('tstzrange("startAtUtc", "endAtUtc", \'[)\')');
     expect(sql).toContain("ON DELETE RESTRICT");
     expect(sql).not.toContain("ON DELETE CASCADE");
     expect(sql).toContain("appointment.create");

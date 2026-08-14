@@ -29,7 +29,12 @@ export function isActiveSchedulingStatus(value: string): value is ActiveScheduli
 }
 
 export function canCancel(status: AppointmentStatus): boolean {
-  return status === "REQUESTED" || status === "CONFIRMED" || status === "CHECKED_IN" || status === "IN_PROGRESS";
+  return (
+    status === "REQUESTED" ||
+    status === "CONFIRMED" ||
+    status === "CHECKED_IN" ||
+    status === "IN_PROGRESS"
+  );
 }
 
 export function canReschedule(status: AppointmentStatus): boolean {

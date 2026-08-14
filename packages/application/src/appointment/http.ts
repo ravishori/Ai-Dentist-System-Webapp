@@ -1,7 +1,12 @@
 import type { AppointmentListFilter, AuthenticatedIdentity } from "@dentalcare/domain";
 import { AppointmentValidationError } from "@dentalcare/domain";
 import { toPublicAppointment, type AppointmentApplicationService } from "./service.js";
-import { parseCreateInput, parseListFilter, parsePatchInput, parseRescheduleInput } from "./validation.js";
+import {
+  parseCreateInput,
+  parseListFilter,
+  parsePatchInput,
+  parseRescheduleInput,
+} from "./validation.js";
 
 export interface AppointmentHttpResult {
   readonly status: number;
@@ -25,7 +30,9 @@ export async function handleAppointmentCreate(
   try {
     const parsed = parseCreateInput(input.body);
     const result = await service.create(input.identity, input.organizationId, parsed);
-    return toHttpResult(result, (appointment) => ({ appointment: toPublicAppointment(appointment) }));
+    return toHttpResult(result, (appointment) => ({
+      appointment: toPublicAppointment(appointment),
+    }));
   } catch (error) {
     return validationError(error);
   }
@@ -82,7 +89,11 @@ export async function handleAppointmentPatch(
     input.appointmentId,
   );
   if (!existing.ok) {
-    return toHttpResult(existing, (appointment) => ({ appointment: toPublicAppointment(appointment) }));
+    return {
+      status: existing.status,
+      headers: JSON_HEADERS,
+      body: { error: existing.error, message: existing.message },
+    };
   }
   try {
     parsePatchInput(input.body);
@@ -116,7 +127,9 @@ export async function handleAppointmentReschedule(
       input.appointmentId,
       parsed,
     );
-    return toHttpResult(result, (appointment) => ({ appointment: toPublicAppointment(appointment) }));
+    return toHttpResult(result, (appointment) => ({
+      appointment: toPublicAppointment(appointment),
+    }));
   } catch (error) {
     return validationError(error);
   }

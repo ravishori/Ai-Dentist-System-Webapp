@@ -1,5 +1,9 @@
 import { AppointmentValidationError, isAppointmentStatus } from "@dentalcare/domain";
-import type { AppointmentCreateInput, AppointmentListFilter, AppointmentRescheduleInput } from "@dentalcare/domain";
+import type {
+  AppointmentCreateInput,
+  AppointmentListFilter,
+  AppointmentRescheduleInput,
+} from "@dentalcare/domain";
 
 const CREATE_FIELDS = new Set([
   "patientId",
@@ -104,7 +108,7 @@ function requireTimeZone(value: unknown): string {
     throw new AppointmentValidationError("timezone");
   }
   const trimmed = value.trim();
-  if (!/^[A-Za-z_]+\/[A-Za-z0-9_+\-]+$/.test(trimmed) && trimmed !== "UTC") {
+  if (!/^[A-Za-z_]+\/[A-Za-z0-9_+-]+$/.test(trimmed) && trimmed !== "UTC") {
     throw new AppointmentValidationError("timezone");
   }
   try {

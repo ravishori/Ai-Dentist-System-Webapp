@@ -55,7 +55,10 @@ export class PrismaBranchLookup implements BranchLookup {
 export class PrismaAppointmentRepository implements AppointmentRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async create(context: AppointmentWriteContext, input: AppointmentCreateInput): Promise<Appointment> {
+  async create(
+    context: AppointmentWriteContext,
+    input: AppointmentCreateInput,
+  ): Promise<Appointment> {
     try {
       const record = await this.prisma.$transaction(async (tx) => {
         const created = await tx.appointment.create({

@@ -91,10 +91,19 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
   private sequence = 0;
   private chain: Promise<unknown> = Promise.resolve();
 
-  async create(context: AppointmentWriteContext, input: AppointmentCreateInput): Promise<Appointment> {
+  async create(
+    context: AppointmentWriteContext,
+    input: AppointmentCreateInput,
+  ): Promise<Appointment> {
     return this.exclusive(async () => {
       this.assertAvailable();
-      this.assertNoOverlap(context.organizationId, input.patientId, input.practitionerId, input.startAtUtc, input.endAtUtc);
+      this.assertNoOverlap(
+        context.organizationId,
+        input.patientId,
+        input.practitionerId,
+        input.startAtUtc,
+        input.endAtUtc,
+      );
       const appointment = this.build(context.organizationId, input);
       this.commitSideEffects("created", appointment, context.actorUserId, undefined, "REQUESTED");
       this.records.set(appointment.id, appointment);
@@ -122,7 +131,8 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
     return [...this.records.values()].filter((appointment) => {
       if (appointment.organizationId !== organizationId) return false;
       if (filter?.patientId && appointment.patientId !== filter.patientId) return false;
-      if (filter?.practitionerId && appointment.practitionerId !== filter.practitionerId) return false;
+      if (filter?.practitionerId && appointment.practitionerId !== filter.practitionerId)
+        return false;
       if (filter?.branchId && appointment.branchId !== filter.branchId) return false;
       if (filter?.status && appointment.status !== filter.status) return false;
       return true;
@@ -160,7 +170,13 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
         timezone,
         updatedAt: new Date().toISOString(),
       };
-      this.commitSideEffects("rescheduled", updated, context.actorUserId, existing.status, existing.status);
+      this.commitSideEffects(
+        "rescheduled",
+        updated,
+        context.actorUserId,
+        existing.status,
+        existing.status,
+      );
       this.records.set(updated.id, updated);
       return updated;
     });
@@ -184,7 +200,13 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
         status: "CANCELLED",
         updatedAt: new Date().toISOString(),
       };
-      this.commitSideEffects("cancelled", updated, context.actorUserId, existing.status, "CANCELLED");
+      this.commitSideEffects(
+        "cancelled",
+        updated,
+        context.actorUserId,
+        existing.status,
+        "CANCELLED",
+      );
       this.records.set(updated.id, updated);
       return updated;
     });
