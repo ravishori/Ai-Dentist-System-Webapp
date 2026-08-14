@@ -4,7 +4,7 @@ Implementation-ready TypeScript web application repository for the Dental Appoin
 
 This repository is a **modular monolith** with a separate notification worker. M0 establishes tooling and application shells only. Patient, Appointment, and Notification business behavior is out of scope until later milestones.
 
-## Technology baseline (TDA-IMP-M0-002)
+## Technology baseline (TDA-IMP-M0-002 / TDA-ADR-001)
 
 | Layer     | Choice                                |
 | --------- | ------------------------------------- |
@@ -78,7 +78,7 @@ Controlled Word/PDF source documents remain at the repository root and must be p
 
 - Commit `.env.example` only. Never commit secrets.
 - Configuration fails fast on missing mandatory values and does not print secret values.
-- Authentication provider selection is deferred to M1 / the identity ADR.
+- Authentication provider selection is recorded in TDA-ADR-003 (PROPOSED): Amazon Cognito user pools (Essentials), IdP-only. Do not integrate until human approval.
 - Formal security hardening is M5.
 
 ## Milestones

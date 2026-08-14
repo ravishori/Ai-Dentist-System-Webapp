@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Authority
 The controlled source of truth is defined, in this order, by:
-1. Approved requirements and architecture/ADR documents
+1. Approved requirements and architecture/ADR documents, including TDA-ADR-001 (stack), TDA-ADR-002 (identity/tenant/authorization), and TDA-ADR-003 (managed identity provider) for this repository
 2. Domain specifications
 3. Database Design Documents (DDD)
 4. API specifications
@@ -27,6 +27,10 @@ Governance policy documents:
 Cursor is an implementation assistant, not the autonomous source of business, architecture, security, or database truth.
 
 If two controlled sources materially conflict: STOP. Do not guess. Do not choose one silently. Report the conflict and identify the documents involved.
+
+For this repository (`Ai-Dentist-System-webapp`), TDA-ADR-001 records the stack reconciliation: Next.js/React/TypeScript + PostgreSQL/Prisma + Node.js worker + PostgreSQL outbox. TDA-TDD-001 v1.1 remains a REVIEW-stage historical document; its FastAPI/Python/Celery direction is not the live implementation order for this webapp.
+
+Identity, tenant isolation, RBAC, and object-level authorization follow TDA-ADR-002. TDA-ADR-003 proposes Amazon Cognito user pools (Essentials) as the managed OIDC identity provider, used IdP-only behind `AuthenticationPort`. Do not implement a custom password system. Do not add vendor SDKs or login flows until TDA-ADR-003 is human-approved. Never trust client-supplied tenant, organization, role, or permission values. Do not use Cognito groups, Auth0 Organizations, Clerk Organizations, or Supabase RLS as the application authorization source of truth.
 
 ## Scope control
 - Inspect existing code before changing it.

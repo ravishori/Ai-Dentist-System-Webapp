@@ -23,19 +23,19 @@ Documents: TDA-IMP-M0-002 v1.0, TDA-IMP-M0-001 v1.0, TDA-IMP-001 v1.0
 
 ## Commands executed
 
-| Command | Result |
-|---|---|
-| `pnpm install` | PASS (lockfile written) |
-| `pnpm lint` | PASS |
-| `pnpm format:check` | PASS |
-| `pnpm typecheck` | PASS |
-| `pnpm test` | PASS (6 tests) |
-| `pnpm db:validate` | PASS |
-| `pnpm build` | PASS (web + worker) |
-| `pnpm test:e2e` | PASS (2 Playwright tests) |
-| `pnpm security:secrets` | PASS |
-| `pnpm security:audit` | PASS after `postcss`/`sharp` overrides |
-| CI YAML parse | PASS |
+| Command                 | Result                                 |
+| ----------------------- | -------------------------------------- |
+| `pnpm install`          | PASS (lockfile written)                |
+| `pnpm lint`             | PASS                                   |
+| `pnpm format:check`     | PASS                                   |
+| `pnpm typecheck`        | PASS                                   |
+| `pnpm test`             | PASS (6 tests)                         |
+| `pnpm db:validate`      | PASS                                   |
+| `pnpm build`            | PASS (web + worker)                    |
+| `pnpm test:e2e`         | PASS (2 Playwright tests)              |
+| `pnpm security:secrets` | PASS                                   |
+| `pnpm security:audit`   | PASS after `postcss`/`sharp` overrides |
+| CI YAML parse           | PASS                                   |
 
 ## Database
 
@@ -64,10 +64,14 @@ Documents: TDA-IMP-M0-002 v1.0, TDA-IMP-M0-001 v1.0, TDA-IMP-001 v1.0
 ## Risks / blockers
 
 - TDA-TDD-001 v1.1 (REVIEW) still lists FastAPI/Python + Celery; M0 applied TDA-IMP-M0-002 TypeScript baseline. Human reconciliation required before TDD approval.
-- Authentication provider is unset; M1 cannot complete identity work until the identity ADR is approved.
+- Authentication provider is unset in code. TDA-ADR-003 v1.0 proposes Amazon Cognito user pools (Essentials) as the managed IdP. M1 cannot complete provider integration until TDA-ADR-001/002/003 are human-approved.
 - Local `docker-compose.yml` uses a non-production local Postgres password for developer convenience.
 - pnpm overrides pin `postcss@8.5.23` and `sharp@0.35.3` to clear Next.js 15.5.23 transitive audit findings. Revisit when Next.js is upgraded through an approved change.
 
+## Stack reconciliation follow-up
+
+TDA-ADR-001 v1.0 records the FastAPI/Python vs Next.js/TypeScript conflict and the repository-specific decision. See `docs/adr/TDA-ADR-001_Technology-Stack-and-Architecture-Reconciliation_v1.0.md`.
+
 ## Next milestone
 
-M1 — Foundation & Identity, after identity/auth provider ADR.
+M1 — Foundation & Identity, after human approval of TDA-ADR-001, TDA-ADR-002, and TDA-ADR-003. Do not add vendor SDKs before that approval.

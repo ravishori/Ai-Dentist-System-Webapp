@@ -1,7 +1,8 @@
 # Technology Stack — M0 Baseline
 
-Status: Applied from TDA-IMP-M0-002 (DECISION BASELINE)
+Status: Applied from TDA-IMP-M0-002 (DECISION BASELINE); formalized for this repository by TDA-ADR-001 v1.0 (PROPOSED — READY FOR HUMAN APPROVAL)
 Date: 2026-08-14
+Authoritative ADR: `docs/adr/TDA-ADR-001_Technology-Stack-and-Architecture-Reconciliation_v1.0.md`
 
 ## Selected stack
 
@@ -32,9 +33,15 @@ Date: 2026-08-14
 - Notification path: business transaction → PostgreSQL outbox → worker → provider adapter → SMTP/Twilio
 - No microservices, Redis, Kafka, RabbitMQ, or other brokers in M0
 
+## Identity provider (proposed)
+
+TDA-ADR-003 v1.0 (PROPOSED — READY FOR HUMAN APPROVAL) selects **Amazon Cognito user pools, Essentials plan**, as the managed OIDC identity provider. The application remains the source of truth for tenant context, membership, RBAC, and object-level authorization. See `docs/adr/TDA-ADR-003_Managed-Identity-Provider-Selection_v1.0.md`.
+
+Do not add Cognito/Auth0/Clerk SDKs, login routes, or identity tables until that ADR is human-approved.
+
 ## Explicit non-selections at M0
 
 - No custom authentication/password system
-- No managed auth provider deep integration
+- No managed auth provider deep integration (vendor named in TDA-ADR-003; not implemented in M0)
 - No Patient / Appointment / Notification business schema or UI
 - No production deployment topology

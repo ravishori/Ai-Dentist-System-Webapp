@@ -1,8 +1,10 @@
 # ADR-M0-001 — TypeScript modular monolith for the web-application repository
 
-Status: Proposed / applied as TDA-IMP-M0-002 DECISION BASELINE
+Status: Historical working note — superseded as the named architecture decision by TDA-ADR-001 v1.0
 Date: 2026-08-14
 Milestone: M0
+
+Formal ADR: `docs/adr/TDA-ADR-001_Technology-Stack-and-Architecture-Reconciliation_v1.0.md`
 
 ## Decision
 
