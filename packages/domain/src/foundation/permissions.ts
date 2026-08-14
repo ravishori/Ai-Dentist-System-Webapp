@@ -1,6 +1,6 @@
 /**
- * Foundation permission keys (TDA-ADR-002 §12).
- * Patient/Appointment/Notification keys are deferred until those domains.
+ * Application permission keys (TDA-ADR-002 §12).
+ * Appointment/Notification keys remain deferred.
  */
 export const FOUNDATION_PERMISSIONS = [
   "organization.read",
@@ -12,12 +12,34 @@ export const FOUNDATION_PERMISSIONS = [
 
 export type FoundationPermission = (typeof FOUNDATION_PERMISSIONS)[number];
 
+/** Tenant staff patient operations. Self-access keys are not seeded in M3. */
+export const PATIENT_PERMISSIONS = [
+  "patient.create",
+  "patient.read.tenant",
+  "patient.update.tenant",
+  "patient.archive",
+] as const;
+
+export type PatientPermission = (typeof PATIENT_PERMISSIONS)[number];
+
+export const APPLICATION_PERMISSIONS = [...FOUNDATION_PERMISSIONS, ...PATIENT_PERMISSIONS] as const;
+
+export type ApplicationPermission = (typeof APPLICATION_PERMISSIONS)[number];
+
 export const PLATFORM_PERMISSIONS = ["security.manage"] as const;
 
 export type PlatformPermission = (typeof PLATFORM_PERMISSIONS)[number];
 
 export function isFoundationPermission(value: string): value is FoundationPermission {
   return (FOUNDATION_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isPatientPermission(value: string): value is PatientPermission {
+  return (PATIENT_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isApplicationPermission(value: string): value is ApplicationPermission {
+  return (APPLICATION_PERMISSIONS as readonly string[]).includes(value);
 }
 
 export function isPlatformPermission(value: string): value is PlatformPermission {

@@ -28,10 +28,16 @@ export {
 } from "./authorization-port.js";
 export {
   FOUNDATION_PERMISSIONS,
+  PATIENT_PERMISSIONS,
+  APPLICATION_PERMISSIONS,
   PLATFORM_PERMISSIONS,
   isFoundationPermission,
+  isPatientPermission,
+  isApplicationPermission,
   isPlatformPermission,
   type FoundationPermission,
+  type PatientPermission,
+  type ApplicationPermission,
   type PlatformPermission,
 } from "./permissions.js";
 export {

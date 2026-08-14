@@ -5,7 +5,7 @@
 //
 // M1: authentication identity-mapping and session persistence.
 // M2: organization/tenant, membership, RBAC catalog, security event log.
-// Patient/Appointment/Notification remain later.
+// M3: organization-scoped patient identity (not clinical records).
 
 generator client {
   provider = "prisma-client-js"
@@ -83,6 +83,7 @@ model Organization {
   updatedAt   DateTime     @updatedAt
   branches    Branch[]
   memberships Membership[]
+  patients    Patient[]
 
   @@map("organizations")
 }
@@ -186,4 +187,21 @@ model SecurityEvent {
   @@index([actorUserId])
   @@index([organizationId])
   @@map("security_events")
+}
+
+model Patient {
+  id             String       @id @default(cuid())
+  organizationId String
+  firstName      String
+  lastName       String
+  dateOfBirth    DateTime     @db.Date
+  email          String?
+  phone          String?
+  status         String       @default("active")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId])
+  @@map("patients")
 }

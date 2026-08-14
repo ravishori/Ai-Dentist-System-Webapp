@@ -22,10 +22,16 @@ export {
   type AuthorizationContext,
   type AuthorizationDenyReason,
   FOUNDATION_PERMISSIONS,
+  PATIENT_PERMISSIONS,
+  APPLICATION_PERMISSIONS,
   PLATFORM_PERMISSIONS,
   isFoundationPermission,
+  isPatientPermission,
+  isApplicationPermission,
   isPlatformPermission,
   type FoundationPermission,
+  type PatientPermission,
+  type ApplicationPermission,
   type PlatformPermission,
   TENANT_ROLE_KEYS,
   PLATFORM_ROLE_KEYS,
@@ -37,7 +43,17 @@ export {
   type PlatformRoleKey,
   type RoleKey,
 } from "./foundation/index.js";
-export { PATIENT_BOUNDARY } from "./patient/index.js";
+export {
+  PATIENT_BOUNDARY,
+  PATIENT_STATUSES,
+  isPatientStatus,
+  PatientValidationError,
+  type Patient,
+  type PatientStatus,
+  type PatientCreateInput,
+  type PatientUpdateInput,
+  type PatientRepository,
+} from "./patient/index.js";
 export { APPOINTMENT_BOUNDARY } from "./appointment/index.js";
 export { NOTIFICATION_BOUNDARY } from "./notification/index.js";
 
