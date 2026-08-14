@@ -1,18 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { startWorker } from "./runtime.js";
 import { createProcessorRegistry } from "./processors/index.js";
+import { testConfig } from "@dentalcare/test-utils";
 
 describe("notification worker shell", () => {
   it("starts, logs readiness, and does not register processors at M0", async () => {
     const messages: string[] = [];
     await startWorker({
-      config: {
-        NODE_ENV: "test",
-        LOG_LEVEL: "info",
-        DATABASE_URL: "postgresql://USER:PASSWORD@localhost:5432/dentalcare",
-        AUTH_PROVIDER: "unset",
-        APP_BASE_URL: "http://localhost:3000",
-      },
+      config: testConfig({ LOG_LEVEL: "info" }),
       logger: {
         info(message) {
           messages.push(message);

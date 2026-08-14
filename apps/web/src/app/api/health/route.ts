@@ -10,7 +10,7 @@ export function GET(): Response {
     status: "ok",
     service: "web",
     timestamp: new Date().toISOString(),
-    milestone: "M0",
+    milestone: "M1",
   };
 
   return Response.json(body);

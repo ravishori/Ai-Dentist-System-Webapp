@@ -62,3 +62,41 @@ describe("createLogger", () => {
     expect(lines[0]).not.toContain("secret");
   });
 });
+
+describe("managed authentication configuration", () => {
+  it("requires OIDC settings when AUTH_PROVIDER=managed", () => {
+    expect(() =>
+      loadConfig({
+        ...validEnv,
+        AUTH_PROVIDER: "managed",
+      }),
+    ).toThrow(ConfigurationError);
+  });
+
+  it("rejects production loopback redirect URIs", () => {
+    expect(() =>
+      loadConfig({
+        ...validEnv,
+        NODE_ENV: "production",
+        AUTH_PROVIDER: "managed",
+        OIDC_ISSUER: "https://cognito-idp.ap-south-1.amazonaws.com/ap-south-1_example",
+        OIDC_CLIENT_ID: "client",
+        OIDC_REDIRECT_URI: "http://localhost:3000/api/auth/callback",
+        AUTH_SESSION_SECRET: "test-session-secret-which-is-32b-min",
+      }),
+    ).toThrow(ConfigurationError);
+  });
+
+  it("loads managed configuration with placeholders", () => {
+    const config = loadConfig({
+      ...validEnv,
+      AUTH_PROVIDER: "managed",
+      OIDC_ISSUER: "https://cognito-idp.ap-south-1.amazonaws.com/ap-south-1_example",
+      OIDC_CLIENT_ID: "client",
+      OIDC_REDIRECT_URI: "https://app.example.test/api/auth/callback",
+      AUTH_SESSION_SECRET: "test-session-secret-which-is-32b-min",
+    });
+    expect(config.AUTH_CLOCK_SKEW_SECONDS).toBe(60);
+    expect(config.AUTH_SESSION_TTL_SECONDS).toBe(28_800);
+  });
+});

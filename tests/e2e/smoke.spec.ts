@@ -17,6 +17,6 @@ test("health endpoint returns ok without business payload", async ({ request }) 
   expect(body).toMatchObject({
     status: "ok",
     service: "web",
-    milestone: "M0",
+    milestone: "M1",
   });
 });

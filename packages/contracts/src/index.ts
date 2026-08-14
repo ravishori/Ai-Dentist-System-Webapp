@@ -4,7 +4,7 @@ export interface HealthResponse {
   status: HealthStatus;
   service: "web" | "worker";
   timestamp: string;
-  milestone: "M0";
+  milestone: "M0" | "M1";
 }
 
 export const API_VERSION = "v1";

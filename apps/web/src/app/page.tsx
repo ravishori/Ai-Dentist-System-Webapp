@@ -6,8 +6,9 @@ export default function StatusPage() {
         Status: <span className="status">ok</span>
       </p>
       <p>
-        This is the M0 application shell. It confirms that the web process starts, loads validated
-        configuration, and exposes a technical status page.
+        This is the M1 application shell. Public routes remain available. Authentication uses Amazon
+        Cognito User Pools behind AuthenticationPort. Authorization and clinical workflows are not
+        implemented in this milestone.
       </p>
       <p>
         Patient, Appointment, and Notification product workflows are not implemented in this

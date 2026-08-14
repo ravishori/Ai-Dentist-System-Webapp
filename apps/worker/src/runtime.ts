@@ -15,7 +15,7 @@ export async function startWorker(options: WorkerRuntimeOptions): Promise<void> 
   const processors = createProcessorRegistry();
   options.logger.info("notification worker starting", {
     service: "worker",
-    milestone: "M0",
+    milestone: "M1",
     nodeEnv: options.config.NODE_ENV,
     authProvider: options.config.AUTH_PROVIDER,
     registeredProcessors: processors.list(),
