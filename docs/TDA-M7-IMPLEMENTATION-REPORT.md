@@ -2,9 +2,22 @@
 
 **Milestone:** M7 Practitioner Management and Availability  
 **Date:** 2026-08-15  
-**Status:** Implemented on `cursor/m7-practitioner-availability-3efc`; **not production-ready**  
 **Depends on:** M0–M6, approved `docs/ADR-FOLLOWUP-M7.md` (APPROVED 2026-08-15)  
 **Does not redesign:** M1 authentication, M2 authorization evaluator, M3 patient identity, M4 appointment identity/exclusions, M5 delivery/worker/SMTP, M6 lifecycle commands
+
+**Status (these are different states):**
+
+```text
+IMPLEMENTED
+TESTED
+DRAFT PR #8
+NOT MERGED
+NOT REVIEWED
+NOT DEPLOYED
+NOT PRODUCTION READY
+```
+
+Branch: `cursor/m7-practitioner-availability-3efc`
 
 ---
 
@@ -122,6 +135,8 @@ Appointment and notification tests were updated so seeded practitioners are assi
 
 ## 9. Validation
 
+Re-verified 2026-08-15 during M7 / PR #8 preservation. These are the current results from that run, not historical claims.
+
 | Gate           | Command                 | Result                                              |
 | -------------- | ----------------------- | --------------------------------------------------- |
 | Tests          | `pnpm test`             | PASS (189 tests)                                    |
@@ -133,6 +148,11 @@ Appointment and notification tests were updated so seeded practitioners are assi
 | Security audit | `pnpm security:audit`   | PASS                                                |
 | Secrets        | `pnpm security:secrets` | PASS                                                |
 | E2E            | `CI=true pnpm test:e2e` | PASS (8 tests)                                      |
+
+```text
+LIVE POSTGRESQL EXCLUSION TESTS:
+NOT EXECUTED — DATABASE_URL / LIVE DATABASE UNAVAILABLE
+```
 
 ---
 

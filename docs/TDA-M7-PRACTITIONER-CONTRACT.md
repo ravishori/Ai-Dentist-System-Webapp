@@ -1,6 +1,17 @@
 # TDA-M7 Practitioner Management and Availability Contract
 
-**Status:** Implemented for M7 (Practitioner Management and Availability)  
+**Status:**
+
+```text
+IMPLEMENTED
+TESTED
+DRAFT PR #8
+NOT MERGED
+NOT REVIEWED
+NOT DEPLOYED
+NOT PRODUCTION READY
+```
+
 **Date:** 2026-08-15  
 **Depends on:** M0–M6, approved `docs/ADR-FOLLOWUP-M7.md` (APPROVED 2026-08-15)  
 **Does not implement:** calendar sync, patient-facing booking, practitioner self-schedule, branch timezone, public holidays, complex recurrence, licensing/credentials, hard-delete, new notification event types, automatic cancel/reschedule
