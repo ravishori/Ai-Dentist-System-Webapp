@@ -128,17 +128,17 @@ Live PostgreSQL concurrent `SKIP LOCKED` is **not** executed in CI: CI `DATABASE
 
 ## 8. Validation
 
-| Gate           | Command                 | Result                                                         |
-| -------------- | ----------------------- | -------------------------------------------------------------- |
-| Tests          | `pnpm test`             | PASS (149 tests)                                               |
-| Lint           | `pnpm lint`             | PASS                                                           |
-| Format         | `pnpm format:check`     | PASS                                                           |
-| Typecheck      | `pnpm typecheck`        | PASS                                                           |
-| DB validation  | `pnpm db:validate`      | PASS                                                           |
-| Build          | `pnpm build`            | PASS (`/api/notifications/[outboxId]`)                         |
-| Security audit | `pnpm security:audit`   | PASS (no known vulnerabilities; nodemailer 9.0.1)              |
-| Secrets        | `pnpm security:secrets` | PASS                                                           |
-| E2E            | `CI=true pnpm test:e2e` | PASS (6 tests)                                                 |
+| Gate           | Command                 | Result                                            |
+| -------------- | ----------------------- | ------------------------------------------------- |
+| Tests          | `pnpm test`             | PASS (149 tests)                                  |
+| Lint           | `pnpm lint`             | PASS                                              |
+| Format         | `pnpm format:check`     | PASS                                              |
+| Typecheck      | `pnpm typecheck`        | PASS                                              |
+| DB validation  | `pnpm db:validate`      | PASS                                              |
+| Build          | `pnpm build`            | PASS (`/api/notifications/[outboxId]`)            |
+| Security audit | `pnpm security:audit`   | PASS (no known vulnerabilities; nodemailer 9.0.1) |
+| Secrets        | `pnpm security:secrets` | PASS                                              |
+| E2E            | `CI=true pnpm test:e2e` | PASS (6 tests)                                    |
 
 ---
 
