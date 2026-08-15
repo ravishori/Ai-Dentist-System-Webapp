@@ -1,0 +1,548 @@
+# TDA-ADR-FOLLOWUP-M6
+
+## M6 Appointment Operations — Human Architecture Decision Record
+
+**Document ID:** TDA-ADR-FOLLOWUP-M6  
+**Version:** 1.0  
+**Status:** PROPOSED — AWAITING HUMAN APPROVAL  
+**Date:** 2026-08-15  
+**Milestone:** M6 — Appointment Operations  
+**Depends on:** approved `docs/ADR-FOLLOWUP-M4.md` (M4-13 lifecycle; M4-10 permissions; M4-16 retention; M4-17 history) and approved `docs/ADR-FOLLOWUP-M5.md` (M5-06 events; M5-09 worker disabled by default)  
+**Scope:** Confirm, check-in, start, complete, and no-show operations on existing organization-scoped appointments  
+**This file is not an approved ADR.**
+
+Agents and coding assistants must not mark this document approved.
+
+No Appointment Operations implementation may begin until the decisions in this document are reviewed and the human approval section is completed as `APPROVED`.
+
+```text
+M6 IMPLEMENTATION BLOCKED — AWAITING HUMAN M6 DECISION APPROVAL
+```
+
+This proposal does **not** authorize production release, deployment, merge to `main`, real SMTP enablement, calendar integration, clinical notes, billing, patient-portal features, or M7 work.
+
+---
+
+# 1. Purpose
+
+M4 persisted the appointment status vocabulary and implemented **create**, **read**, **reschedule**, and **cancel**. Status values `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`, `COMPLETED`, and `NO_SHOW` already exist in the CHECK constraint and domain helpers, but **no command mutates into those states**.
+
+M6 would add the remaining lifecycle operations. Implementation is blocked until the human project owner approves M6-01 through M6-12.
+
+---
+
+# 2. Verified M4 / M5 baseline (do not redesign)
+
+Inspected on `cursor/m3-patient-domain-3efc` after M5 merge (`5503e19`) plus the M5-07 retry-config cleanup on this branch.
+
+## 2.1 Status model
+
+Stored statuses (`appointments_status_check` and `APPOINTMENT_STATUSES`):
+
+```text
+REQUESTED
+CONFIRMED
+CHECKED_IN
+IN_PROGRESS
+COMPLETED
+NO_SHOW
+CANCELLED
+```
+
+New appointments start as `REQUESTED`. M4 mutates status only via **cancel** → `CANCELLED`. Reschedule is a command and history event; there is **no** `RESCHEDULED` status.
+
+M4 domain helpers today:
+
+| Helper          | Allowed from                                          |
+| --------------- | ----------------------------------------------------- |
+| `canCancel`     | `REQUESTED`, `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS` |
+| `canReschedule` | `REQUESTED`, `CONFIRMED`                              |
+
+M4 ADR M4-13 diagram showed `CANCELLED` from `REQUESTED` and `NO_SHOW` from `CONFIRMED`. The implemented `canCancel` helper is **wider** than that diagram. M6-01 and M6-02 must resolve the gap.
+
+## 2.2 Conflict / slot occupancy
+
+`ACTIVE_SCHEDULING_STATUSES` and both exclusion constraints (`appointments_practitioner_time_excl`, `appointments_patient_time_excl`) occupy a slot when status is:
+
+```text
+REQUESTED, CONFIRMED, CHECKED_IN, IN_PROGRESS
+```
+
+`COMPLETED`, `NO_SHOW`, and `CANCELLED` are **already excluded** from those constraints and therefore already release the slot. Range is half-open `[start, end)`.
+
+## 2.3 Authorization
+
+Existing appointment permissions: `appointment.create`, `appointment.read.tenant`, `appointment.update.tenant`, `appointment.reschedule`, `appointment.cancel`.
+
+Granted to `STAFF`, `PRACTITIONER`, and `PRACTICE_ADMIN`. **Denied** to `PATIENT` (M4-08) and `SYSTEM_ADMIN` (M4-09). Application code uses `AuthorizationPort.authorize()` and does not branch on role names.
+
+There are **no** confirm / check-in / start / complete / no-show permissions.
+
+## 2.4 HTTP surface today
+
+| Method  | Path                               | Permission                                                       |
+| ------- | ---------------------------------- | ---------------------------------------------------------------- |
+| `POST`  | `/api/appointments`                | `appointment.create`                                             |
+| `GET`   | `/api/appointments`                | `appointment.read.tenant`                                        |
+| `GET`   | `/api/appointments/:id`            | `appointment.read.tenant`                                        |
+| `PATCH` | `/api/appointments/:id`            | `appointment.update.tenant` (lookup then 400; no mutable fields) |
+| `POST`  | `/api/appointments/:id/reschedule` | `appointment.reschedule`                                         |
+| `POST`  | `/api/appointments/:id/cancel`     | `appointment.cancel`                                             |
+
+No `DELETE`. No confirm / check-in / start / complete / no-show routes. Cross-tenant ids return the same `404 not_found` as a missing row.
+
+## 2.5 History, audit, and outbox
+
+History event types today: `created`, `rescheduled`, `cancelled`.
+
+Each mutation writes, in one transaction: appointment row + `appointment_history` (`actorUserId` = authenticated user) + `security_events` (`appointment.create` / `appointment.reschedule` / `appointment.cancel`) + `notification_outbox` intent.
+
+M5 delivers only:
+
+```text
+appointment.created
+appointment.rescheduled
+appointment.cancelled
+```
+
+The M5 worker remains **disabled by default**. Real SMTP remains fail-closed.
+
+## 2.6 Retention
+
+M4-16: no `DELETE /api/appointments/:id`; foreign keys `ON DELETE RESTRICT`; no hard delete through the application API.
+
+M1–M5 architecture is not to be redesigned by M6.
+
+---
+
+# 3. Decision summary (proposed)
+
+| #     | Decision                       | Proposed decision                                                                                                                                                          |
+| ----- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M6-01 | Status lifecycle               | Strict forward transitions only. No skipped states. `NO_SHOW` only from `CONFIRMED`. Terminal: `COMPLETED`, `NO_SHOW`, `CANCELLED`.                                        |
+| M6-02 | Cancel after check-in / start  | Cancel **allowed** after check-in. Cancel **not allowed** after `IN_PROGRESS`. This **narrows** M4 `canCancel`.                                                            |
+| M6-03 | Who may operate                | `STAFF`, `PRACTITIONER`, `PRACTICE_ADMIN` for all M6 commands. `PATIENT` and `SYSTEM_ADMIN` remain denied.                                                                 |
+| M6-04 | New permissions                | `appointment.confirm`, `appointment.check_in`, `appointment.start`, `appointment.complete`, `appointment.no_show`. Do not reuse `appointment.update.tenant`.               |
+| M6-05 | Command API                    | Dedicated `POST /api/appointments/:id/{confirm,check-in,start,complete,no-show}`. No PATCH status. Do not implement until approved.                                        |
+| M6-06 | Time rules                     | Check-in from 30 minutes before start until scheduled end. Late check-in allowed in that window. No-show only after scheduled start. Complete allowed after scheduled end. |
+| M6-07 | Conflict / slot release        | Confirm existing M4 exclusions: `COMPLETED`, `NO_SHOW`, `CANCELLED` release the slot; the four active statuses continue to block overlap.                                  |
+| M6-08 | History and audit              | One history event and one `security_events` row per successful transition; actor is the authenticated user.                                                                |
+| M6-09 | Notifications                  | **No new notification event types in M6.** M5 remains created / rescheduled / cancelled only.                                                                              |
+| M6-10 | Clinical / billing on complete | **No.** Completion changes lifecycle status only.                                                                                                                          |
+| M6-11 | Reopen                         | **No reopen in M6.** Terminal states stay terminal.                                                                                                                        |
+| M6-12 | Retention / hard delete        | Preserve M4-16: no hard delete.                                                                                                                                            |
+
+These are **proposed**, not approved. The human may change any row before marking this record `APPROVED`.
+
+---
+
+# 4. M6-01 — Exact status lifecycle and allowed transitions
+
+## Proposed transitions
+
+```text
+REQUESTED
+    ├── CONFIRMED          (confirm)
+    └── CANCELLED          (existing cancel)
+
+CONFIRMED
+    ├── CHECKED_IN         (check-in)
+    ├── NO_SHOW            (no-show)
+    └── CANCELLED          (existing cancel)
+    (reschedule remains an operation; status stays CONFIRMED or REQUESTED per M4)
+
+CHECKED_IN
+    ├── IN_PROGRESS        (start)
+    └── CANCELLED          (existing cancel; see M6-02)
+
+IN_PROGRESS
+    └── COMPLETED          (complete)
+    (cancel denied; see M6-02)
+
+COMPLETED                  terminal
+NO_SHOW                    terminal
+CANCELLED                  terminal
+```
+
+## Explicitly not allowed (unless the human changes this)
+
+- Skipping `CONFIRMED` (`REQUESTED` → `CHECKED_IN` / `IN_PROGRESS` / `COMPLETED` / `NO_SHOW`)
+- Skipping `CHECKED_IN` (`CONFIRMED` → `IN_PROGRESS` / `COMPLETED`)
+- Skipping `IN_PROGRESS` (`CHECKED_IN` → `COMPLETED`)
+- `NO_SHOW` from any status other than `CONFIRMED`
+- Reverse transitions (for example `CONFIRMED` → `REQUESTED`)
+- Any transition out of `COMPLETED`, `NO_SHOW`, or `CANCELLED` (see M6-11)
+
+Reschedule does **not** become a status. It remains the M4 command, allowed only from `REQUESTED` or `CONFIRMED`.
+
+## Rationale
+
+Matches the M4-13 diagram more closely than the current `canCancel` helper, while keeping cancel on `CONFIRMED` and `CHECKED_IN` as operational reality. Forcing every visit through confirm → check-in → start → complete keeps audit history unambiguous.
+
+## M4 / M5 compatibility
+
+No new status strings. The existing CHECK constraint is sufficient if these transitions are enforced in application code. M5 is unaffected because no new outbox types are proposed (M6-09).
+
+## Requires human confirmation
+
+The exact allowed-from set for each command, including whether `NO_SHOW` may ever be recorded from `REQUESTED` or `CHECKED_IN`.
+
+---
+
+# 5. M6-02 — Cancellation after check-in or after work begins
+
+## Proposed
+
+```text
+Cancel after CHECKED_IN: allowed
+Cancel after IN_PROGRESS: not allowed
+```
+
+## Rationale
+
+A checked-in patient may still leave before treatment. Once work has started (`IN_PROGRESS`), the visit should end as `COMPLETED` rather than `CANCELLED`, so reporting and slot-release semantics stay distinct.
+
+This **narrows** M4 `canCancel`, which currently allows cancel from `IN_PROGRESS`. If approved, M6 implementation must update that helper. If the human prefers to keep M4’s wider cancel rule, say so explicitly in approval.
+
+## Security implications
+
+Invalid transitions must return the same generic `400 invalid_input` used by M4. Do not leak current status or schedule in denied bodies.
+
+---
+
+# 6. M6-03 — Who may perform each operation
+
+## Proposed role matrix
+
+| Operation | STAFF            | PRACTITIONER     | PRACTICE_ADMIN   | PATIENT | SYSTEM_ADMIN |
+| --------- | ---------------- | ---------------- | ---------------- | ------- | ------------ |
+| confirm   | allow            | allow            | allow            | deny    | deny         |
+| check-in  | allow            | allow            | allow            | deny    | deny         |
+| start     | allow            | allow            | allow            | deny    | deny         |
+| complete  | allow            | allow            | allow            | deny    | deny         |
+| no-show   | allow            | allow            | allow            | deny    | deny         |
+| cancel    | allow (existing) | allow (existing) | allow (existing) | deny    | deny         |
+
+Enforcement is by **permission keys** (M6-04) granted to those three tenant roles, not by role-name branching in appointment code.
+
+## Rationale
+
+Same tenant-staff pattern as M4. A patient portal and platform-admin appointment access remain out of scope.
+
+## Security implications
+
+`PATIENT` and `SYSTEM_ADMIN` stay denied on appointment APIs. Cross-tenant ids continue to return `404 not_found`. Inactive membership / inactive organization continue to fail closed through `AuthorizationPort`.
+
+---
+
+# 7. M6-04 — New tenant-scoped permissions
+
+## Proposed keys
+
+```text
+appointment.confirm
+appointment.check_in
+appointment.start
+appointment.complete
+appointment.no_show
+```
+
+Seed them for `STAFF`, `PRACTITIONER`, and `PRACTICE_ADMIN` only.
+
+Do **not**:
+
+- reuse `appointment.update.tenant` for status commands (PATCH remains non-mutating)
+- introduce `appointment.read.self` or patient self-service keys
+- grant these keys to `PATIENT` or `SYSTEM_ADMIN`
+
+## Rationale
+
+M4 already separated `reschedule` and `cancel` from generic update. Status operations are similarly irreversible and must be independently authorizable.
+
+---
+
+# 8. M6-05 — Command-style API surface
+
+## Proposed routes (do not implement in this task)
+
+```text
+POST /api/appointments/:id/confirm
+POST /api/appointments/:id/check-in
+POST /api/appointments/:id/start
+POST /api/appointments/:id/complete
+POST /api/appointments/:id/no-show
+```
+
+Existing `POST /api/appointments/:id/cancel` remains the cancel command.
+
+## Proposed HTTP behavior
+
+- Authenticate (M1) then authorize the matching M6-04 permission in the requested organization (M2).
+- Lookup by `organizationId + appointmentId` only.
+- Empty bodies unless a later approved decision adds fields (M6-10 proposes none).
+- Success: `200` with `{ appointment }` in the existing public shape.
+- Invalid transition / time-rule failure: `400 invalid_input`.
+- Unauthenticated: `401`. Forbidden: `403`. Missing or cross-tenant: `404`. Persistence failure: `503`.
+- Prefix remains `/api/...`, not `/api/v1`.
+
+## Explicitly out of scope
+
+- Generic PATCH of `status`
+- Batch operations
+- History list HTTP routes
+- Practitioner management APIs
+- Patient-portal APIs
+
+---
+
+# 9. M6-06 — Time rules
+
+All comparisons use the appointment’s stored `startAtUtc` / `endAtUtc` (UTC instants). The appointment `timezone` is not a separate clock; it remains display metadata.
+
+## Proposed
+
+| Rule                         | Proposed default                                                     |
+| ---------------------------- | -------------------------------------------------------------------- |
+| Earliest check-in            | 30 minutes before `startAtUtc`                                       |
+| Late check-in                | Allowed until `endAtUtc`                                             |
+| Check-in after scheduled end | **Not allowed**                                                      |
+| Earliest no-show             | At or after `startAtUtc`, and only from `CONFIRMED`                  |
+| No-show after scheduled end  | **Allowed** (patient never arrived)                                  |
+| Start                        | Allowed at or after earliest check-in window, only from `CHECKED_IN` |
+| Complete                     | Allowed from `IN_PROGRESS` even after `endAtUtc`                     |
+| Confirm                      | No clock constraint; only from `REQUESTED`                           |
+
+There is **no** automatic no-show job in M6. Recording no-show is an explicit staff command.
+
+## Requires human confirmation
+
+Whether 30 minutes is the correct check-in lead time, whether a grace period after start should be required before no-show, and whether complete/start may occur after the scheduled end.
+
+---
+
+# 10. M6-07 — Conflict semantics for terminal states
+
+## Proposed
+
+Confirm the existing M4 exclusion behavior. Do **not** change the PostgreSQL exclusion constraints in M6 unless a human decision requires it.
+
+| Status        | Occupies practitioner/patient slot |
+| ------------- | ---------------------------------- |
+| `REQUESTED`   | yes                                |
+| `CONFIRMED`   | yes                                |
+| `CHECKED_IN`  | yes                                |
+| `IN_PROGRESS` | yes                                |
+| `COMPLETED`   | **no — releases slot**             |
+| `NO_SHOW`     | **no — releases slot**             |
+| `CANCELLED`   | **no — releases slot**             |
+
+After complete, no-show, or cancel, another appointment may use the same practitioner or patient overlap window.
+
+## Rationale
+
+Slot release is already how M4 cancel works. Terminal M6 states should behave the same way so reporting and scheduling stay consistent.
+
+---
+
+# 11. M6-08 — Required history and audit events
+
+## Proposed appointment history event types (additive)
+
+| Command  | `eventType`  | `fromStatus`  | `toStatus`    | `actorUserId`      |
+| -------- | ------------ | ------------- | ------------- | ------------------ |
+| confirm  | `confirmed`  | `REQUESTED`   | `CONFIRMED`   | authenticated user |
+| check-in | `checked_in` | `CONFIRMED`   | `CHECKED_IN`  | authenticated user |
+| start    | `started`    | `CHECKED_IN`  | `IN_PROGRESS` | authenticated user |
+| complete | `completed`  | `IN_PROGRESS` | `COMPLETED`   | authenticated user |
+| no-show  | `no_show`    | `CONFIRMED`   | `NO_SHOW`     | authenticated user |
+
+Existing `created`, `rescheduled`, and `cancelled` remain unchanged.
+
+## Proposed security audit actions
+
+```text
+appointment.confirm
+appointment.check_in
+appointment.start
+appointment.complete
+appointment.no_show
+```
+
+Same shape as M4: `actorUserId`, `organizationId`, `action`, `outcome: allowed`. No patient PII, appointment times, or clinical text in history or audit rows.
+
+Routine GET remains unaudited.
+
+Writes remain **one transaction**: appointment status + history + security event. **No** outbox insert for these operations under M6-09.
+
+There is no system actor in M6; every transition is a human API command.
+
+---
+
+# 12. M6-09 — Notification intents
+
+## Proposed default
+
+```text
+No new notification event types in M6.
+```
+
+M5 continues to send only created, rescheduled, and cancelled email (when the worker is explicitly enabled and eligibility passes). Confirm, check-in, start, complete, and no-show do **not** write `notification_outbox` rows.
+
+## Rationale
+
+M5-06 is approved as those three events only. Adding confirm/complete/no-show mail would require templates, consent reuse, retry load, and a new M5 decision. M6 should not silently expand M5.
+
+## Compatibility
+
+The worker stays disabled by default. Real SMTP stays fail-closed. This task must not enable either.
+
+If the human wants patient-facing confirm or no-show mail, that is a **separate** notification decision after M6, not an M6 default.
+
+---
+
+# 13. M6-10 — Completion payload (clinical / billing)
+
+## Proposed default
+
+```text
+No.
+```
+
+`POST .../complete` changes appointment lifecycle status only. It must not accept or persist clinical notes, diagnosis, treatment outcome, prescriptions, charting, invoices, payments, or insurance data.
+
+## Rationale
+
+Clinical and billing domains are explicitly out of M0–M5 scope and remain out of M6.
+
+---
+
+# 14. M6-11 — Reopen policy
+
+## Proposed default
+
+```text
+No reopen in M6.
+```
+
+`COMPLETED`, `NO_SHOW`, and `CANCELLED` cannot return to an active scheduling status. Correcting a mistaken no-show or cancel is a future, separately approved workflow (if ever).
+
+---
+
+# 15. M6-12 — Retention and hard delete
+
+## Proposed default
+
+```text
+Preserve M4-16: no hard delete.
+```
+
+No `DELETE /api/appointments/:id`. Foreign keys remain `ON DELETE RESTRICT`. Terminal appointments remain readable according to `appointment.read.tenant`. Automatic purge remains unauthorized (M5-11 already requires a separate retention policy for outbox metadata).
+
+---
+
+# 16. Security implications (summary)
+
+- Tenant scope and BOLA 404 behavior stay identical to M4.
+- Each new command has its own permission; PATCH cannot become a status backdoor.
+- Denied responses must not include patient names, emails, phones, dates of birth, appointment times, practitioner identity, or branch information.
+- History/audit store actor id and status names only.
+- No patient portal. No SYSTEM_ADMIN appointment operations.
+- No new notification PII paths.
+
+---
+
+# 17. Implementation freeze
+
+Until §19 is `APPROVED`:
+
+```text
+M6 IMPLEMENTATION BLOCKED — AWAITING HUMAN M6 DECISION APPROVAL
+```
+
+Do **not**:
+
+- add confirm / check-in / start / complete / no-show routes or services
+- add or seed M6 permission keys
+- change `canCancel` / transition helpers for M6
+- add migrations or status-constraint changes
+- add history event types in code
+- write new outbox event types
+- change the M5 worker, SMTP, or retry behavior (except the already-committed M5-07 config cleanup)
+- merge to `main`, deploy, enable real SMTP, start calendar integration, or add clinical / billing / patient-portal / M7 features
+
+---
+
+# 18. What the human must confirm
+
+1. Exact allowed transitions (M6-01), including `NO_SHOW` source states.
+2. Cancel after `CHECKED_IN` and after `IN_PROGRESS` (M6-02). Proposed: yes after check-in, no after start.
+3. Role access for each command (M6-03). Proposed: tenant staff only.
+4. New permission key names and grants (M6-04).
+5. Command routes (M6-05). Proposed paths above; do not implement until approved.
+6. Check-in lead time, late check-in, no-show timing, and after-end operations (M6-06).
+7. Slot release for `COMPLETED` / `NO_SHOW` / `CANCELLED` (M6-07). Proposed: confirm current M4 exclusions.
+8. History event names and security-event actions (M6-08).
+9. Whether any M6 operation creates a notification intent (M6-09). Proposed: **none**.
+10. Whether complete may record clinical or billing data (M6-10). Proposed: **no**.
+11. Whether terminal appointments may be reopened (M6-11). Proposed: **no**.
+12. Retention / hard-delete (M6-12). Proposed: keep M4-16.
+
+---
+
+# 19. HUMAN APPROVAL
+
+## Approval Status
+
+```text
+PROPOSED — AWAITING HUMAN APPROVAL
+```
+
+After review, the human may change this section to:
+
+```text
+APPROVED
+```
+
+Agents and coding assistants must not make that change.
+
+## Approved By
+
+```text
+Name:
+Role:
+Date:
+```
+
+## Human Approval Statement
+
+I have reviewed the M6 Appointment Operations decisions in this document and approve them as the architectural basis for M6 implementation.
+
+I understand that:
+
+- M6 implementation will follow these decisions only.
+- This approval does not authorize production release, deployment, or merge to `main`.
+- This approval does not authorize real SMTP enablement, calendar integration, clinical records, billing, patient portal, or M7 work.
+- Future changes require a new or updated decision record.
+
+```text
+Human Approval:
+
+[ ] APPROVED
+[ ] NOT APPROVED
+```
+
+---
+
+# 20. Post-approval rule
+
+Once this document is `APPROVED`, it becomes the M6 implementation source of truth.
+
+A **separate** implementation task may then follow M6-01 through M6-12.
+
+If implementation reveals a conflict with approved M4 or M5: **STOP** and report it. Do not silently change the architecture.
+
+Until that approval:
+
+```text
+M6 IMPLEMENTATION BLOCKED — AWAITING HUMAN M6 DECISION APPROVAL
+```
