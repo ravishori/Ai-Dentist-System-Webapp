@@ -18,6 +18,7 @@ import {
   type PractitionerUnavailability,
   type PractitionerUnavailabilityCreateInput,
   type PractitionerUpdateInput,
+  type PractitionerVerificationStatus,
   type PractitionerWriteContext,
   type PractitionerHistoryEvent,
   type WeeklyWorkingInterval,
@@ -100,7 +101,7 @@ export class PrismaPractitionerRepository implements PractitionerManagementRepos
   async setVerificationStatus(
     context: PractitionerWriteContext,
     practitionerId: string,
-    verificationStatus: import("@dentalcare/domain").PractitionerVerificationStatus,
+    verificationStatus: PractitionerVerificationStatus,
   ): Promise<Practitioner> {
     return this.mutate(context, practitionerId, async (tx, existing) => {
       const updated = await tx.practitioner.update({

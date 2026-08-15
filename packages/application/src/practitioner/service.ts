@@ -16,6 +16,7 @@ import type {
   PractitionerUnavailability,
   PractitionerUnavailabilityCreateInput,
   PractitionerUpdateInput,
+  PractitionerVerificationStatus,
 } from "@dentalcare/domain";
 import {
   PractitionerConflictError,
@@ -198,7 +199,7 @@ export class PractitionerApplicationService {
     identity: AuthenticatedIdentity | null,
     organizationId: string | undefined,
     practitionerId: string | undefined,
-    verificationStatus: import("@dentalcare/domain").PractitionerVerificationStatus,
+    verificationStatus: PractitionerVerificationStatus,
   ): Promise<PractitionerServiceResult<PractitionerProfileView>> {
     const gate = await this.gate(identity, organizationId, "practitioner.verify");
     if (!gate.ok) {

@@ -13,6 +13,7 @@ import {
   type PractitionerUnavailability,
   type PractitionerUnavailabilityCreateInput,
   type PractitionerUpdateInput,
+  type PractitionerVerificationStatus,
   type PractitionerWriteContext,
   type PractitionerHistoryEvent,
   type WeeklyWorkingInterval,
@@ -131,7 +132,7 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
   async setVerificationStatus(
     context: PractitionerWriteContext,
     practitionerId: string,
-    verificationStatus: import("@dentalcare/domain").PractitionerVerificationStatus,
+    verificationStatus: PractitionerVerificationStatus,
   ): Promise<Practitioner> {
     return this.exclusive(async () => {
       const existing = await this.require(context.organizationId, practitionerId);

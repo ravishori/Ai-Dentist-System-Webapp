@@ -24,7 +24,8 @@ export async function consumeRateLimit(
   config: RateLimitConfig,
   nowMs: number,
 ): Promise<{ allowed: boolean; count: number }> {
-  const windowStartedAtMs = Math.floor(nowMs / (config.windowSeconds * 1000)) * config.windowSeconds * 1000;
+  const windowStartedAtMs =
+    Math.floor(nowMs / (config.windowSeconds * 1000)) * config.windowSeconds * 1000;
   const count = await store.increment(bucketKey, windowStartedAtMs, nowMs);
   return { allowed: count <= config.maxRequests, count };
 }

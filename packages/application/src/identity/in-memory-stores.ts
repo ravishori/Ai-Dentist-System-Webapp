@@ -1,6 +1,7 @@
 import type {
   AuthOtpChallenge,
   ClinicCode,
+  InvitationPurpose,
   OrganizationInvitation,
   RegistrationSession,
 } from "@dentalcare/domain";
@@ -20,6 +21,15 @@ export class InMemoryOtpChallengeStore implements OtpChallengeStore {
 
   async update(challenge: AuthOtpChallenge): Promise<void> {
     this.records.set(challenge.id, challenge);
+  }
+
+  async tryConsume(id: string, now: Date): Promise<boolean> {
+    const existing = this.records.get(id);
+    if (!existing || existing.consumedAt || Date.parse(existing.expiresAt) <= now.getTime()) {
+      return false;
+    }
+    this.records.set(id, { ...existing, consumedAt: now.toISOString() });
+    return true;
   }
 
   async findLatestActive(input: {
@@ -69,6 +79,33 @@ export class InMemoryInvitationStore implements InvitationStore {
     this.invitationsByHash.set(invite.tokenHash, invite.id);
   }
 
+  async tryRedeemInvitation(input: {
+    tokenHash: string;
+    purpose: InvitationPurpose;
+    now: Date;
+  }): Promise<OrganizationInvitation | null> {
+    const invitation = await this.findInvitationByTokenHash(input.tokenHash);
+    if (
+      !invitation ||
+      invitation.purpose !== input.purpose ||
+      invitation.status !== "PENDING" ||
+      invitation.useCount >= invitation.maxUses ||
+      Date.parse(invitation.expiresAt) <= input.now.getTime()
+    ) {
+      return null;
+    }
+    const useCount = invitation.useCount + 1;
+    const updated: OrganizationInvitation = {
+      ...invitation,
+      useCount,
+      status: useCount >= invitation.maxUses ? "REDEEMED" : invitation.status,
+      redeemedAt: input.now.toISOString(),
+      updatedAt: input.now.toISOString(),
+    };
+    await this.updateInvitation(updated);
+    return updated;
+  }
+
   async saveClinicCode(code: ClinicCode): Promise<void> {
     this.clinicCodes.set(code.id, code);
   }
@@ -81,6 +118,12 @@ export class InMemoryInvitationStore implements InvitationStore {
       [...this.clinicCodes.values()].find(
         (c) => c.organizationId === organizationId && c.codeHash === codeHash,
       ) ?? null
+    );
+  }
+
+  async findActiveClinicCodesByHash(codeHash: string): Promise<readonly ClinicCode[]> {
+    return [...this.clinicCodes.values()].filter(
+      (c) => c.codeHash === codeHash && c.status === "ACTIVE",
     );
   }
 

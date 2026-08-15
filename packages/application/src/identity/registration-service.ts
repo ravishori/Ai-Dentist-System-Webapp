@@ -105,13 +105,20 @@ export class RegistrationCompletionService {
       return { ok: false as const, error: "invalid_session" as const };
     }
     if (Date.parse(session.expiresAt) <= now.getTime()) {
-      await this.ports.sessions.update({ ...session, status: "EXPIRED", updatedAt: now.toISOString() });
+      await this.ports.sessions.update({
+        ...session,
+        status: "EXPIRED",
+        updatedAt: now.toISOString(),
+      });
       return { ok: false as const, error: "expired" as const };
     }
     if (!session.email || !session.emailVerifiedAt || !session.phone || !session.phoneVerifiedAt) {
       return { ok: false as const, error: "otp_incomplete" as const };
     }
-    if (session.purpose === "PATIENT" && (!session.firstName || !session.lastName || !dateOfBirthForPatient)) {
+    if (
+      session.purpose === "PATIENT" &&
+      (!session.firstName || !session.lastName || !dateOfBirthForPatient)
+    ) {
       return { ok: false as const, error: "profile_incomplete" as const };
     }
 
@@ -168,7 +175,8 @@ export class RegistrationCompletionService {
         { organizationId: session.organizationId, actorUserId: this.ports.actorUserIdForAudit },
         {
           userId,
-          displayName: session.displayName ?? `${session.firstName ?? ""} ${session.lastName ?? ""}`.trim(),
+          displayName:
+            session.displayName ?? `${session.firstName ?? ""} ${session.lastName ?? ""}`.trim(),
           verificationStatus: "pending",
         },
       );

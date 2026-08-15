@@ -1,4 +1,12 @@
-export { generateNumericOtp, generateOtpSalt, hashOtp, verifyOtpHash, hashSecretToken, normalizeEmail, normalizePhone } from "./otp-crypto.js";
+export {
+  generateNumericOtp,
+  generateOtpSalt,
+  hashOtp,
+  verifyOtpHash,
+  hashSecretToken,
+  normalizeEmail,
+  normalizePhone,
+} from "./otp-crypto.js";
 export { FakeSmsDeliveryAdapter, FailClosedSmsDeliveryAdapter } from "./sms-adapters.js";
 export {
   InMemoryRateLimitBucketStore,
@@ -30,3 +38,17 @@ export {
   RegistrationCompletionService,
   type RegistrationCompletionPorts,
 } from "./registration-service.js";
+export {
+  handleOtpRequest,
+  handleOtpVerify,
+  handleInvitationRedeem,
+  handleClinicCodeRedeem,
+  handleRegistrationProfile,
+  handleRegistrationComplete,
+  handlePasswordlessLoginStart,
+  handlePasswordlessLoginVerify,
+  handleInvitationCreate,
+  handleClinicCodeCreate,
+  handlePractitionerVerification,
+  type IdentityHttpResult,
+} from "./http.js";

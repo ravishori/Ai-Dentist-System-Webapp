@@ -95,7 +95,10 @@ describe("C3 OTP challenge security", () => {
     expect(issued.ok).toBe(true);
     if (!issued.ok) return;
     now = new Date("2026-08-15T12:10:00.000Z");
-    const verified = await service.verify({ challengeId: issued.challengeId, code: issued.debugCode! });
+    const verified = await service.verify({
+      challengeId: issued.challengeId,
+      code: issued.debugCode!,
+    });
     expect(verified.ok).toBe(false);
     if (!verified.ok) expect(verified.error).toBe("expired");
   });
@@ -108,9 +111,15 @@ describe("C3 OTP challenge security", () => {
       purpose: "LOGIN_EMAIL",
     });
     if (!issued.ok) throw new Error("issue failed");
-    const first = await service.verify({ challengeId: issued.challengeId, code: issued.debugCode! });
+    const first = await service.verify({
+      challengeId: issued.challengeId,
+      code: issued.debugCode!,
+    });
     expect(first.ok).toBe(true);
-    const second = await service.verify({ challengeId: issued.challengeId, code: issued.debugCode! });
+    const second = await service.verify({
+      challengeId: issued.challengeId,
+      code: issued.debugCode!,
+    });
     expect(second.ok).toBe(false);
     if (!second.ok) expect(second.error).toBe("consumed");
   });
@@ -131,7 +140,10 @@ describe("C3 OTP challenge security", () => {
     const last = await service.verify({ challengeId: issued.challengeId, code: "000000" });
     expect(last.ok).toBe(false);
     if (!last.ok) expect(last.error).toBe("max_attempts");
-    const after = await service.verify({ challengeId: issued.challengeId, code: issued.debugCode! });
+    const after = await service.verify({
+      challengeId: issued.challengeId,
+      code: issued.debugCode!,
+    });
     expect(after.ok).toBe(false);
   });
 
@@ -218,14 +230,10 @@ describe("C3 invitation security", () => {
     const store = new InMemoryInvitationStore();
     const sessions = new InMemoryRegistrationSessionStore();
     const rates = new InMemoryRateLimitBucketStore();
-    const service = new InvitationApplicationService(
-      PEPPER,
-      store,
-      sessions,
-      rates,
-      3600,
-      { windowSeconds: 60, maxRequests: 5 },
-    );
+    const service = new InvitationApplicationService(PEPPER, store, sessions, rates, 3600, {
+      windowSeconds: 60,
+      maxRequests: 5,
+    });
     return { service, store, sessions };
   }
 
@@ -283,23 +291,24 @@ describe("C3 invitation security", () => {
     }
   });
 
-  it("clinic codes are organization-scoped", async () => {
+  it("clinic codes resolve organization without client org id", async () => {
     const { service } = inviteHarness();
     await service.createClinicCode({
       organizationId: ORG_A,
       plaintextCode: "CLINIC1",
       createdByUserId: ADMIN_A,
     });
-    const wrongOrg = await service.redeemClinicCode({
-      organizationId: ORG_B,
-      plaintextCode: "CLINIC1",
-    });
-    expect(wrongOrg.ok).toBe(false);
     const rightOrg = await service.redeemClinicCode({
-      organizationId: ORG_A,
       plaintextCode: "CLINIC1",
     });
     expect(rightOrg.ok).toBe(true);
+    if (rightOrg.ok) {
+      expect(rightOrg.data.session.organizationId).toBe(ORG_A);
+    }
+    const missing = await service.redeemClinicCode({
+      plaintextCode: "NOPE",
+    });
+    expect(missing.ok).toBe(false);
   });
 });
 

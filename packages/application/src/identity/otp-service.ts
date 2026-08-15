@@ -15,11 +15,7 @@ import {
   normalizePhone,
   verifyOtpHash,
 } from "./otp-crypto.js";
-import {
-  consumeRateLimit,
-  type RateLimitBucketStore,
-  type RateLimitConfig,
-} from "./rate-limit.js";
+import { consumeRateLimit, type RateLimitBucketStore, type RateLimitConfig } from "./rate-limit.js";
 
 export interface OtpRuntimeConfig {
   readonly pepper: string;
@@ -42,6 +38,8 @@ export interface OtpChallengeStore {
     registrationSessionId?: string;
     nowIso: string;
   }): Promise<AuthOtpChallenge | null>;
+  /** Optional atomic consume for concurrent verification safety. */
+  tryConsume?(id: string, now: Date): Promise<boolean>;
 }
 
 export type OtpServiceFailure = {
@@ -241,7 +239,12 @@ export class OtpChallengeService {
       return { ok: false, error: "rate_limited", message: "Too many verification attempts." };
     }
 
-    const ok = verifyOtpHash(this.config.pepper, challenge.codeSalt, input.code, challenge.codeHash);
+    const ok = verifyOtpHash(
+      this.config.pepper,
+      challenge.codeSalt,
+      input.code,
+      challenge.codeHash,
+    );
     if (!ok) {
       const attempts = challenge.attempts + 1;
       const updated: AuthOtpChallenge = {
@@ -254,6 +257,17 @@ export class OtpChallengeService {
         return { ok: false, error: "max_attempts", message: "Too many incorrect attempts." };
       }
       return { ok: false, error: "invalid_code", message: "Incorrect code." };
+    }
+
+    if (this.challenges.tryConsume) {
+      const consumedOk = await this.challenges.tryConsume(challenge.id, now);
+      if (!consumedOk) {
+        return { ok: false, error: "consumed", message: "Code already used." };
+      }
+      return {
+        ok: true,
+        challenge: { ...challenge, consumedAt: now.toISOString() },
+      };
     }
 
     const consumed: AuthOtpChallenge = { ...challenge, consumedAt: now.toISOString() };

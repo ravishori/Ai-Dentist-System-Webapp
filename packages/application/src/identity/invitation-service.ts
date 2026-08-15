@@ -13,11 +13,18 @@ export interface InvitationStore {
   findInvitationById(id: string): Promise<OrganizationInvitation | null>;
   findInvitationByTokenHash(tokenHash: string): Promise<OrganizationInvitation | null>;
   updateInvitation(invite: OrganizationInvitation): Promise<void>;
+  /**
+   * Atomic single-use redemption. Returns updated invitation or null if not redeemable.
+   */
+  tryRedeemInvitation(input: {
+    tokenHash: string;
+    purpose: InvitationPurpose;
+    now: Date;
+  }): Promise<OrganizationInvitation | null>;
   saveClinicCode(code: ClinicCode): Promise<void>;
-  findClinicCodeByOrgHash(
-    organizationId: string,
-    codeHash: string,
-  ): Promise<ClinicCode | null>;
+  findClinicCodeByOrgHash(organizationId: string, codeHash: string): Promise<ClinicCode | null>;
+  /** Lookup active codes by hash only — must not trust client organizationId. */
+  findActiveClinicCodesByHash(codeHash: string): Promise<readonly ClinicCode[]>;
   findClinicCodeById(id: string): Promise<ClinicCode | null>;
   updateClinicCode(code: ClinicCode): Promise<void>;
 }
@@ -117,7 +124,9 @@ export class InvitationApplicationService {
     token: string;
     purpose: InvitationPurpose;
     ip?: string;
-  }): Promise<InvitationServiceResult<{ session: RegistrationSession; invitation: OrganizationInvitation }>> {
+  }): Promise<
+    InvitationServiceResult<{ session: RegistrationSession; invitation: OrganizationInvitation }>
+  > {
     const now = this.options.now?.() ?? new Date();
     const nowMs = now.getTime();
     if (input.ip) {
@@ -133,48 +142,46 @@ export class InvitationApplicationService {
     }
 
     const tokenHash = hashSecretToken(this.pepper, input.token);
-    const invitation = await this.store.findInvitationByTokenHash(tokenHash);
-    if (!invitation) {
-      return { ok: false, error: "not_found", message: "Invitation not found." };
-    }
-    if (invitation.purpose !== input.purpose) {
-      return { ok: false, error: "wrong_purpose", message: "Invitation purpose mismatch." };
-    }
-    if (invitation.status === "REVOKED") {
-      return { ok: false, error: "revoked", message: "Invitation revoked." };
-    }
-    if (invitation.status === "REDEEMED" || invitation.useCount >= invitation.maxUses) {
+    const redeemed = await this.store.tryRedeemInvitation({
+      tokenHash,
+      purpose: input.purpose,
+      now,
+    });
+    if (!redeemed) {
+      const invitation = await this.store.findInvitationByTokenHash(tokenHash);
+      if (!invitation) {
+        return { ok: false, error: "not_found", message: "Invitation not found." };
+      }
+      if (invitation.purpose !== input.purpose) {
+        return { ok: false, error: "wrong_purpose", message: "Invitation purpose mismatch." };
+      }
+      if (invitation.status === "REVOKED") {
+        return { ok: false, error: "revoked", message: "Invitation revoked." };
+      }
+      if (invitation.status === "REDEEMED" || invitation.useCount >= invitation.maxUses) {
+        return { ok: false, error: "redeemed", message: "Invitation already used." };
+      }
+      if (Date.parse(invitation.expiresAt) <= nowMs || invitation.status === "EXPIRED") {
+        return { ok: false, error: "expired", message: "Invitation expired." };
+      }
       return { ok: false, error: "redeemed", message: "Invitation already used." };
-    }
-    if (Date.parse(invitation.expiresAt) <= nowMs || invitation.status === "EXPIRED") {
-      return { ok: false, error: "expired", message: "Invitation expired." };
     }
 
     const session: RegistrationSession = {
       id: this.options.idFactory?.() ?? `reg_${Date.now()}`,
-      purpose: invitation.purpose,
-      organizationId: invitation.organizationId,
-      invitationId: invitation.id,
+      purpose: redeemed.purpose,
+      organizationId: redeemed.organizationId,
+      invitationId: redeemed.id,
       status: "IN_PROGRESS",
       expiresAt: new Date(nowMs + this.registrationTtlSeconds * 1000).toISOString(),
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     };
     await this.sessions.save(session);
-
-    const updated: OrganizationInvitation = {
-      ...invitation,
-      useCount: invitation.useCount + 1,
-      status: invitation.useCount + 1 >= invitation.maxUses ? "REDEEMED" : invitation.status,
-      redeemedAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    };
-    await this.store.updateInvitation(updated);
-    return { ok: true, data: { session, invitation: updated } };
+    return { ok: true, data: { session, invitation: redeemed } };
   }
 
   async redeemClinicCode(input: {
-    organizationId: string;
     plaintextCode: string;
     ip?: string;
   }): Promise<InvitationServiceResult<{ session: RegistrationSession; clinicCode: ClinicCode }>> {
@@ -193,19 +200,24 @@ export class InvitationApplicationService {
     }
 
     const codeHash = hashSecretToken(this.pepper, input.plaintextCode.trim().toUpperCase());
-    const clinicCode = await this.store.findClinicCodeByOrgHash(input.organizationId, codeHash);
-    if (!clinicCode) {
+    const matches = await this.store.findActiveClinicCodesByHash(codeHash);
+    const usable = matches.filter(
+      (c) =>
+        c.status === "ACTIVE" &&
+        c.purpose === "PATIENT" &&
+        (!c.expiresAt || Date.parse(c.expiresAt) > nowMs),
+    );
+    if (usable.length === 0) {
       return { ok: false, error: "not_found", message: "Clinic code not found." };
     }
-    if (clinicCode.status !== "ACTIVE") {
-      return { ok: false, error: "revoked", message: "Clinic code revoked." };
+    if (usable.length > 1) {
+      return {
+        ok: false,
+        error: "invalid",
+        message: "Clinic code is ambiguous. Use a practice invitation instead.",
+      };
     }
-    if (clinicCode.expiresAt && Date.parse(clinicCode.expiresAt) <= nowMs) {
-      return { ok: false, error: "expired", message: "Clinic code expired." };
-    }
-    if (clinicCode.purpose !== "PATIENT") {
-      return { ok: false, error: "wrong_purpose", message: "Clinic code purpose mismatch." };
-    }
+    const clinicCode = usable[0]!;
 
     const session: RegistrationSession = {
       id: this.options.idFactory?.() ?? `reg_${Date.now()}`,
