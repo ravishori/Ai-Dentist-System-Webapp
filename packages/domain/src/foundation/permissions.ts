@@ -1,6 +1,6 @@
 /**
- * Foundation permission keys (TDA-ADR-002 §12).
- * Patient/Appointment/Notification keys are deferred until those domains.
+ * Application permission keys (TDA-ADR-002 §12).
+ * Notification read is bound in M5. Delivery itself is worker-owned (no human RBAC).
  */
 export const FOUNDATION_PERMISSIONS = [
   "organization.read",
@@ -12,12 +12,68 @@ export const FOUNDATION_PERMISSIONS = [
 
 export type FoundationPermission = (typeof FOUNDATION_PERMISSIONS)[number];
 
+/** Tenant staff patient operations. Self-access keys are not seeded in M3. */
+export const PATIENT_PERMISSIONS = [
+  "patient.create",
+  "patient.read.tenant",
+  "patient.update.tenant",
+  "patient.archive",
+] as const;
+
+export type PatientPermission = (typeof PATIENT_PERMISSIONS)[number];
+
+/** Tenant staff appointment operations. Self-access keys are not seeded in M4. */
+export const APPOINTMENT_PERMISSIONS = [
+  "appointment.create",
+  "appointment.read.tenant",
+  "appointment.update.tenant",
+  "appointment.reschedule",
+  "appointment.cancel",
+  "appointment.confirm",
+  "appointment.check_in",
+  "appointment.start",
+  "appointment.complete",
+  "appointment.no_show",
+] as const;
+
+export type AppointmentPermission = (typeof APPOINTMENT_PERMISSIONS)[number];
+
+/** Tenant staff may read outbox delivery metadata. Worker processing is not a human permission. */
+export const NOTIFICATION_PERMISSIONS = ["notification.read"] as const;
+
+export type NotificationPermission = (typeof NOTIFICATION_PERMISSIONS)[number];
+
+export const APPLICATION_PERMISSIONS = [
+  ...FOUNDATION_PERMISSIONS,
+  ...PATIENT_PERMISSIONS,
+  ...APPOINTMENT_PERMISSIONS,
+  ...NOTIFICATION_PERMISSIONS,
+] as const;
+
+export type ApplicationPermission = (typeof APPLICATION_PERMISSIONS)[number];
+
 export const PLATFORM_PERMISSIONS = ["security.manage"] as const;
 
 export type PlatformPermission = (typeof PLATFORM_PERMISSIONS)[number];
 
 export function isFoundationPermission(value: string): value is FoundationPermission {
   return (FOUNDATION_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isPatientPermission(value: string): value is PatientPermission {
+  return (PATIENT_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isAppointmentPermission(value: string): value is AppointmentPermission {
+  return (APPOINTMENT_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isNotificationPermission(value: string): value is NotificationPermission {
+  return (NOTIFICATION_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isApplicationPermission(value: string): value is ApplicationPermission {
+  return (APPLICATION_PERMISSIONS as readonly string[]).includes(value);
 }
 
 export function isPlatformPermission(value: string): value is PlatformPermission {

@@ -178,7 +178,7 @@ describe("M2 authorization security", () => {
       adapter.authorize({
         principalUserId: USER,
         requestedOrganizationId: ORG_A,
-        permission: "patient.create",
+        permission: "notification.retry",
       }),
     ).resolves.toMatchObject({ allowed: false, reason: "unknown_permission" });
   });

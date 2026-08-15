@@ -6,7 +6,7 @@ import type {
   AuthorizationRequest,
 } from "@dentalcare/domain";
 import {
-  isFoundationPermission,
+  isApplicationPermission,
   isPlatformPermission,
   isPlatformRoleKey,
   isTenantRoleKey,
@@ -48,7 +48,7 @@ export class RbacAuthorizationAdapter implements AuthorizationPort {
     if (!permission || !request.permission) {
       return deny("malformed_context");
     }
-    if (!isFoundationPermission(permission)) {
+    if (!isApplicationPermission(permission)) {
       return deny("unknown_permission");
     }
 

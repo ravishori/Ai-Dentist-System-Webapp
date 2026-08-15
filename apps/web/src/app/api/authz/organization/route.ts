@@ -2,18 +2,10 @@ import { handleOrganizationAuthorizeGet } from "@dentalcare/application";
 import { getAuthenticationPort } from "../../../../infrastructure/auth/port";
 import { getAuthorizationPort } from "../../../../infrastructure/authz/port";
 import { readAuthCookies } from "../../../../infrastructure/auth/cookies";
+import { requestedOrganizationId } from "../../../../infrastructure/http/organization";
 import { logAuthenticationEvent } from "../../../../infrastructure/auth/log";
 
 export const dynamic = "force-dynamic";
-
-function requestedOrganizationId(request: Request): string | undefined {
-  const header = request.headers.get("x-organization-id")?.trim();
-  if (header) {
-    return header;
-  }
-  const url = new URL(request.url);
-  return url.searchParams.get("organizationId")?.trim() || undefined;
-}
 
 export async function GET(request: Request): Promise<Response> {
   const cookies = await readAuthCookies();
