@@ -79,7 +79,17 @@ Live PostgreSQL concurrent exclusion tests are **not** executed in CI: CI `DATAB
 
 ## 7. Validation
 
-Recorded after the M6 implementation gates in this task.
+| Gate           | Command                 | Result                                                    |
+| -------------- | ----------------------- | --------------------------------------------------------- |
+| Tests          | `pnpm test`             | PASS (170 tests)                                          |
+| Lint           | `pnpm lint`             | PASS                                                      |
+| Format         | `pnpm format:check`     | PASS                                                      |
+| Typecheck      | `pnpm typecheck`        | PASS                                                      |
+| DB validation  | `pnpm db:validate`      | PASS                                                      |
+| Build          | `pnpm build`            | PASS (confirm, check-in, start, complete, no-show routes) |
+| Security audit | `pnpm security:audit`   | PASS                                                      |
+| Secrets        | `pnpm security:secrets` | PASS                                                      |
+| E2E            | `CI=true pnpm test:e2e` | PASS (7 tests)                                            |
 
 ---
 
