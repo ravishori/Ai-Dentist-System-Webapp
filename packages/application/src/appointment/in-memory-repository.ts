@@ -2,11 +2,14 @@ import {
   AppointmentConflictError,
   AppointmentNotFoundError,
   AppointmentTransitionError,
+  APPOINTMENT_LIFECYCLE_SPECS,
+  canApplyLifecycleCommand,
   canCancel,
   canReschedule,
   isActiveSchedulingStatus,
   type Appointment,
   type AppointmentCreateInput,
+  type AppointmentLifecycleCommand,
   type AppointmentListFilter,
   type AppointmentRepository,
   type AppointmentWriteContext,
@@ -105,7 +108,15 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
         input.endAtUtc,
       );
       const appointment = this.build(context.organizationId, input);
-      this.commitSideEffects("created", appointment, context.actorUserId, undefined, "REQUESTED");
+      this.commitSideEffects({
+        eventType: "created",
+        appointment,
+        actorUserId: context.actorUserId,
+        fromStatus: undefined,
+        toStatus: "REQUESTED",
+        auditAction: "appointment.create",
+        writeOutbox: true,
+      });
       this.records.set(appointment.id, appointment);
       return appointment;
     });
@@ -170,13 +181,15 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
         timezone,
         updatedAt: new Date().toISOString(),
       };
-      this.commitSideEffects(
-        "rescheduled",
-        updated,
-        context.actorUserId,
-        existing.status,
-        existing.status,
-      );
+      this.commitSideEffects({
+        eventType: "rescheduled",
+        appointment: updated,
+        actorUserId: context.actorUserId,
+        fromStatus: existing.status,
+        toStatus: existing.status,
+        auditAction: "appointment.reschedule",
+        writeOutbox: true,
+      });
       this.records.set(updated.id, updated);
       return updated;
     });
@@ -200,13 +213,58 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
         status: "CANCELLED",
         updatedAt: new Date().toISOString(),
       };
-      this.commitSideEffects(
-        "cancelled",
-        updated,
-        context.actorUserId,
-        existing.status,
-        "CANCELLED",
-      );
+      this.commitSideEffects({
+        eventType: "cancelled",
+        appointment: updated,
+        actorUserId: context.actorUserId,
+        fromStatus: existing.status,
+        toStatus: "CANCELLED",
+        auditAction: "appointment.cancel",
+        writeOutbox: true,
+      });
+      this.records.set(updated.id, updated);
+      return updated;
+    });
+  }
+
+  async applyLifecycleByOrganizationAndId(
+    context: AppointmentWriteContext,
+    appointmentId: string,
+    command: AppointmentLifecycleCommand,
+    now: Date,
+  ): Promise<Appointment> {
+    return this.exclusive(async () => {
+      this.assertAvailable();
+      const existing = await this.findByOrganizationAndId(context.organizationId, appointmentId);
+      if (!existing) {
+        throw new AppointmentNotFoundError();
+      }
+      if (
+        !canApplyLifecycleCommand(
+          command,
+          existing.status,
+          existing.startAtUtc,
+          existing.endAtUtc,
+          now,
+        )
+      ) {
+        throw new AppointmentTransitionError();
+      }
+      const spec = APPOINTMENT_LIFECYCLE_SPECS[command];
+      const updated: Appointment = {
+        ...existing,
+        status: spec.toStatus,
+        updatedAt: new Date().toISOString(),
+      };
+      this.commitSideEffects({
+        eventType: spec.historyEvent,
+        appointment: updated,
+        actorUserId: context.actorUserId,
+        fromStatus: existing.status,
+        toStatus: spec.toStatus,
+        auditAction: spec.auditAction,
+        writeOutbox: false,
+      });
       this.records.set(updated.id, updated);
       return updated;
     });
@@ -254,35 +312,39 @@ export class InMemoryAppointmentRepository implements AppointmentRepository {
     }
   }
 
-  private commitSideEffects(
-    eventType: string,
-    appointment: Appointment,
-    actorUserId: string,
-    fromStatus: string | undefined,
-    toStatus: string,
-  ): void {
-    if (this.failHistory || this.failAudit || this.failOutbox) {
+  private commitSideEffects(input: {
+    eventType: string;
+    appointment: Appointment;
+    actorUserId: string;
+    fromStatus: string | undefined;
+    toStatus: string;
+    auditAction: string;
+    writeOutbox: boolean;
+  }): void {
+    if (this.failHistory || this.failAudit || (input.writeOutbox && this.failOutbox)) {
       throw new Error("appointment_side_effect_failed");
     }
     this.history.push({
-      appointmentId: appointment.id,
-      organizationId: appointment.organizationId,
-      eventType,
-      fromStatus,
-      toStatus,
-      actorUserId,
+      appointmentId: input.appointment.id,
+      organizationId: input.appointment.organizationId,
+      eventType: input.eventType,
+      fromStatus: input.fromStatus,
+      toStatus: input.toStatus,
+      actorUserId: input.actorUserId,
     });
     this.audit.push({
-      actorUserId,
-      organizationId: appointment.organizationId,
-      action: `appointment.${eventType === "created" ? "create" : eventType === "rescheduled" ? "reschedule" : "cancel"}`,
+      actorUserId: input.actorUserId,
+      organizationId: input.appointment.organizationId,
+      action: input.auditAction,
     });
-    this.outbox.push({
-      organizationId: appointment.organizationId,
-      appointmentId: appointment.id,
-      eventType: `appointment.${eventType === "created" ? "created" : eventType}`,
-      status: "pending",
-    });
+    if (input.writeOutbox) {
+      this.outbox.push({
+        organizationId: input.appointment.organizationId,
+        appointmentId: input.appointment.id,
+        eventType: `appointment.${input.eventType === "created" ? "created" : input.eventType}`,
+        status: "pending",
+      });
+    }
   }
 
   private assertAvailable(): void {

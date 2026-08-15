@@ -3,11 +3,14 @@ import {
   AppointmentConflictError,
   AppointmentNotFoundError,
   AppointmentTransitionError,
+  APPOINTMENT_LIFECYCLE_SPECS,
+  canApplyLifecycleCommand,
   canCancel,
   canReschedule,
   isAppointmentStatus,
   type Appointment,
   type AppointmentCreateInput,
+  type AppointmentLifecycleCommand,
   type AppointmentListFilter,
   type AppointmentRepository,
   type AppointmentWriteContext,
@@ -236,6 +239,65 @@ export class PrismaAppointmentRepository implements AppointmentRepository {
             appointmentId: existing.id,
             eventType: "appointment.cancelled",
             status: "pending",
+          },
+        });
+        return updated;
+      });
+      return toAppointment(record);
+    } catch (error) {
+      throw mapPersistenceError(error);
+    }
+  }
+
+  async applyLifecycleByOrganizationAndId(
+    context: AppointmentWriteContext,
+    appointmentId: string,
+    command: AppointmentLifecycleCommand,
+    now: Date,
+  ): Promise<Appointment> {
+    try {
+      const record = await this.prisma.$transaction(async (tx) => {
+        const existing = await tx.appointment.findFirst({
+          where: { id: appointmentId, organizationId: context.organizationId },
+        });
+        if (!existing) {
+          throw new AppointmentNotFoundError();
+        }
+        if (!isAppointmentStatus(existing.status)) {
+          throw new AppointmentTransitionError();
+        }
+        if (
+          !canApplyLifecycleCommand(
+            command,
+            existing.status,
+            existing.startAtUtc.toISOString(),
+            existing.endAtUtc.toISOString(),
+            now,
+          )
+        ) {
+          throw new AppointmentTransitionError();
+        }
+        const spec = APPOINTMENT_LIFECYCLE_SPECS[command];
+        const updated = await tx.appointment.update({
+          where: { id: existing.id },
+          data: { status: spec.toStatus },
+        });
+        await tx.appointmentHistory.create({
+          data: {
+            appointmentId: existing.id,
+            organizationId: context.organizationId,
+            eventType: spec.historyEvent,
+            fromStatus: existing.status,
+            toStatus: spec.toStatus,
+            actorUserId: context.actorUserId,
+          },
+        });
+        await tx.securityEvent.create({
+          data: {
+            actorUserId: context.actorUserId,
+            organizationId: context.organizationId,
+            action: spec.auditAction,
+            outcome: "allowed",
           },
         });
         return updated;

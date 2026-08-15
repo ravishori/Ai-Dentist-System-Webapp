@@ -4,12 +4,21 @@ export const APPOINTMENT_BOUNDARY = "appointment" as const;
 export {
   APPOINTMENT_STATUSES,
   ACTIVE_SCHEDULING_STATUSES,
+  TERMINAL_APPOINTMENT_STATUSES,
+  CHECK_IN_LEAD_MS,
+  APPOINTMENT_LIFECYCLE_COMMANDS,
+  APPOINTMENT_LIFECYCLE_SPECS,
   isAppointmentStatus,
   isActiveSchedulingStatus,
+  isTerminalAppointmentStatus,
+  isAppointmentLifecycleCommand,
   canCancel,
   canReschedule,
+  canApplyLifecycleCommand,
   type AppointmentStatus,
   type ActiveSchedulingStatus,
+  type TerminalAppointmentStatus,
+  type AppointmentLifecycleCommand,
 } from "./lifecycle.js";
 export {
   AppointmentValidationError,

@@ -29,6 +29,11 @@ export const APPOINTMENT_PERMISSIONS = [
   "appointment.update.tenant",
   "appointment.reschedule",
   "appointment.cancel",
+  "appointment.confirm",
+  "appointment.check_in",
+  "appointment.start",
+  "appointment.complete",
+  "appointment.no_show",
 ] as const;
 
 export type AppointmentPermission = (typeof APPOINTMENT_PERMISSIONS)[number];

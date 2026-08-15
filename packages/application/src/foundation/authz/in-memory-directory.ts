@@ -32,6 +32,11 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "appointment.update.tenant",
       "appointment.reschedule",
       "appointment.cancel",
+      "appointment.confirm",
+      "appointment.check_in",
+      "appointment.start",
+      "appointment.complete",
+      "appointment.no_show",
       "notification.read",
     ]);
     this.rolePermissions.set("PRACTITIONER", [
@@ -44,6 +49,11 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "appointment.update.tenant",
       "appointment.reschedule",
       "appointment.cancel",
+      "appointment.confirm",
+      "appointment.check_in",
+      "appointment.start",
+      "appointment.complete",
+      "appointment.no_show",
       "notification.read",
     ]);
     this.rolePermissions.set("PRACTICE_ADMIN", [
@@ -60,6 +70,11 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "appointment.update.tenant",
       "appointment.reschedule",
       "appointment.cancel",
+      "appointment.confirm",
+      "appointment.check_in",
+      "appointment.start",
+      "appointment.complete",
+      "appointment.no_show",
       "notification.read",
     ]);
     this.rolePermissions.set("SYSTEM_ADMIN", [

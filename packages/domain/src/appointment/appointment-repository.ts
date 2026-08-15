@@ -1,6 +1,7 @@
 import type { Appointment, AppointmentCreateInput, AppointmentListFilter } from "./appointment.js";
 import type { Practitioner } from "./practitioner.js";
 import type { BranchRecord } from "./branch-record.js";
+import type { AppointmentLifecycleCommand } from "./lifecycle.js";
 
 export interface AppointmentWriteContext {
   readonly organizationId: string;
@@ -27,6 +28,12 @@ export interface AppointmentRepository {
   cancelByOrganizationAndId(
     context: AppointmentWriteContext,
     appointmentId: string,
+  ): Promise<Appointment>;
+  applyLifecycleByOrganizationAndId(
+    context: AppointmentWriteContext,
+    appointmentId: string,
+    command: AppointmentLifecycleCommand,
+    now: Date,
   ): Promise<Appointment>;
 }
 

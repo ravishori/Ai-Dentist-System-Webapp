@@ -65,12 +65,18 @@ export {
   handleAppointmentPatch,
   handleAppointmentReschedule,
   handleAppointmentCancel,
+  handleAppointmentConfirm,
+  handleAppointmentCheckIn,
+  handleAppointmentStart,
+  handleAppointmentComplete,
+  handleAppointmentNoShow,
   InMemoryAppointmentRepository,
   InMemoryPractitionerRepository,
   InMemoryBranchLookup,
   parseCreateInput as parseAppointmentCreateInput,
   parseRescheduleInput,
 } from "./appointment/index.js";
+export type { AppointmentHttpResult } from "./appointment/index.js";
 export {
   resolveNotificationDelivery,
   FakeNotificationAdapter,

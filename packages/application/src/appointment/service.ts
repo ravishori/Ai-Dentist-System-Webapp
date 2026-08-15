@@ -1,6 +1,7 @@
 import type {
   Appointment,
   AppointmentCreateInput,
+  AppointmentLifecycleCommand,
   AppointmentListFilter,
   AppointmentRepository,
   AppointmentRescheduleInput,
@@ -15,6 +16,7 @@ import {
   AppointmentNotFoundError,
   AppointmentTransitionError,
   AppointmentValidationError,
+  APPOINTMENT_LIFECYCLE_SPECS,
 } from "@dentalcare/domain";
 
 export type AppointmentServiceFailure = {
@@ -45,6 +47,7 @@ export class AppointmentApplicationService {
     private readonly patients: PatientRepository,
     private readonly practitioners: PractitionerRepository,
     private readonly branches: BranchLookup,
+    private readonly clock: () => Date = () => new Date(),
   ) {}
 
   async create(
@@ -196,6 +199,77 @@ export class AppointmentApplicationService {
       const appointment = await this.appointments.cancelByOrganizationAndId(
         { organizationId: gate.organizationId, actorUserId: identity!.userId },
         id,
+      );
+      return { ok: true, status: 200, data: appointment };
+    } catch (error) {
+      return mapWriteError(error);
+    }
+  }
+
+  async confirm(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    appointmentId: string | undefined,
+  ): Promise<AppointmentServiceResult<Appointment>> {
+    return this.applyLifecycle(identity, organizationId, appointmentId, "confirm");
+  }
+
+  async checkIn(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    appointmentId: string | undefined,
+  ): Promise<AppointmentServiceResult<Appointment>> {
+    return this.applyLifecycle(identity, organizationId, appointmentId, "check_in");
+  }
+
+  async start(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    appointmentId: string | undefined,
+  ): Promise<AppointmentServiceResult<Appointment>> {
+    return this.applyLifecycle(identity, organizationId, appointmentId, "start");
+  }
+
+  async complete(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    appointmentId: string | undefined,
+  ): Promise<AppointmentServiceResult<Appointment>> {
+    return this.applyLifecycle(identity, organizationId, appointmentId, "complete");
+  }
+
+  async noShow(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    appointmentId: string | undefined,
+  ): Promise<AppointmentServiceResult<Appointment>> {
+    return this.applyLifecycle(identity, organizationId, appointmentId, "no_show");
+  }
+
+  private async applyLifecycle(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    appointmentId: string | undefined,
+    command: AppointmentLifecycleCommand,
+  ): Promise<AppointmentServiceResult<Appointment>> {
+    const gate = await this.gate(
+      identity,
+      organizationId,
+      APPOINTMENT_LIFECYCLE_SPECS[command].permission,
+    );
+    if (!gate.ok) {
+      return gate;
+    }
+    const id = normalizeId(appointmentId);
+    if (!id) {
+      return invalid();
+    }
+    try {
+      const appointment = await this.appointments.applyLifecycleByOrganizationAndId(
+        { organizationId: gate.organizationId, actorUserId: identity!.userId },
+        id,
+        command,
+        this.clock(),
       );
       return { ok: true, status: 200, data: appointment };
     } catch (error) {

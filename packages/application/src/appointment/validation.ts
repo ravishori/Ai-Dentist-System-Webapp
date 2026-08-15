@@ -50,6 +50,12 @@ export function parsePatchInput(raw: Record<string, unknown>): void {
   throw new AppointmentValidationError("body");
 }
 
+export function parseCommandBody(raw: Record<string, unknown>): void {
+  if (Object.keys(raw).length > 0) {
+    throw new AppointmentValidationError("body");
+  }
+}
+
 export function parseListFilter(query: URLSearchParams): AppointmentListFilter {
   const filter: {
     patientId?: string;
