@@ -1,12 +1,13 @@
 # ADR follow-up — C3 Passwordless OTP Identity & Self-Registration
 
-**Status:** PROPOSED (human approval required; depends on TDA-ADR-004)  
+**Status:** APPROVED FOR IMPLEMENTATION (depends on TDA-ADR-004 APPROVED 2026-08-15)  
 **Date:** 2026-08-15  
 **Depends on:** TDA-ADR-004, TDA-ADR-001, TDA-ADR-002 (partially superseded), TDA-ADR-003 (partially superseded), M1–M7 contracts  
 **Branch:** `cursor/c3-identity-otp-registration-0d79`  
+**Design:** `docs/TDA-C3-DOMAIN-SCHEMA-DIFF.md`  
 **Does not modify:** PR #8 merge policy; M7 practitioner schedule/leave/availability semantics except additive `verificationStatus`
 
-This file records **accepted product decisions** and the **implementation checklist** for C3. It is not self-approved.
+This file records **accepted product decisions** and the **implementation checklist** for C3.
 
 ---
 
@@ -24,78 +25,61 @@ This file records **accepted product decisions** and the **implementation checkl
 
 UI label “Dentist” maps to RBAC role **`PRACTITIONER`**.
 
+### Resolved open items (Phase 3.1)
+
+| # | Topic | Resolution |
+| --- | --- | --- |
+| 1 | Invite permissions | `invitation.patient.create` (PRACTICE_ADMIN + STAFF); `invitation.practitioner.create` (PRACTICE_ADMIN only); `invitation.revoke`; `clinic_code.manage`; `practitioner.verify`; `patient.link_user` |
+| 2 | Staff-created `verificationStatus` | **`verified`** — M7 create is PRACTICE_ADMIN `practitioner.manage` provisioning of same-org users |
+| 4 | Cognito deprecation criteria | Recorded in `docs/TDA-C3-DOMAIN-SCHEMA-DIFF.md` and ADR-004 §7; removal is a separate milestone |
+| 5 | OTP `UserIdentity` subject | `issuer=OTP_ISSUER`, `subject=User.id` (stable opaque application id) |
+| 3 | Production SMS vendor | Still deferred |
+| 6 | Retention TTL | Config-driven challenge/session expiry; archival purge is a later ops task |
+
 ---
 
-## Implementation checklist (post-ADR approval)
+## Implementation checklist
 
 ### Domain / schema (additive)
 
-- [ ] `verificationStatus` on practitioners (default `pending` for self-reg; staff-created may be `verified` by policy)
-- [ ] `addresses` shared table + associations for Patient / Practitioner
-- [ ] `patient_user_links` (or equivalent) with uniqueness protections
-- [ ] `organization_invites` (patient clinic code / practitioner invite) with expiry, role, org, issuer, consumption
-- [ ] `auth_otp_challenges` (purpose, destination hash/normalized destination, otp hash, attempts, expiry, consumedAt)
-- [ ] User phone + phoneVerifiedAt (or normalized identity channels table) without collapsing domain profiles
-- [ ] Extend `AuthProviderId` / config for `otp`
-- [ ] OTP + rate-limit configuration env keys (no secrets in git)
+- [x] Design documented (`TDA-C3-DOMAIN-SCHEMA-DIFF.md`)
+- [x] `verificationStatus` on practitioners
+- [x] `addresses` + associations
+- [x] `patient_user_links`
+- [x] `organization_invitations` + `clinic_codes`
+- [x] `auth_otp_challenges` + rate-limit buckets
+- [x] User phone + phoneVerified
+- [x] `registration_sessions`
+- [x] Extend `AuthProviderId` / config for `otp`
+- [x] OTP + rate-limit configuration env keys
 
 ### AuthenticationPort
 
-- [ ] Keep Cognito `managed` adapter
-- [ ] Add OTP adapter methods without client JWT
-- [ ] On success: existing `dc_session` issuance path
-- [ ] Logout invalidates server session
+- [x] Keep Cognito `managed` adapter
+- [x] Add OTP adapter without client JWT
+- [x] On success: existing `dc_session` issuance
+- [x] Logout invalidates server session
 
-### Registration APIs (names illustrative; follow repo conventions)
+### Registration / delivery / security / frontend / regression
 
-- [ ] Accept invite / resolve clinic
-- [ ] Start patient registration
-- [ ] Start practitioner registration
-- [ ] Request/verify email OTP
-- [ ] Request/verify phone OTP
-- [ ] Complete registration → session
-- [ ] Passwordless login via OTP
-- [ ] Safe enumeration-resistant errors
-
-### Delivery
-
-- [ ] Email OTP via email delivery abstraction (not appointment outbox event types)
-- [ ] `SmsDeliveryPort` + test/fake adapter only in C3
-- [ ] Fail closed if production OTP enabled without providers
-
-### Security
-
-- [ ] Hash OTPs; constant-time verify; attempt/resend/rate limits
-- [ ] No OTP in responses/logs
-- [ ] Invite required for tenant join
-- [ ] No self-assignment of STAFF / PRACTICE_ADMIN / SYSTEM_ADMIN
-- [ ] Concurrent registration race tests
-- [ ] Session fixation / CSRF review per existing web patterns
-
-### Frontend
-
-- [ ] Patient invite registration + dual OTP screens
-- [ ] Practitioner invite registration + pending verification workspace
-- [ ] Passwordless login
-- [ ] Accessibility: keyboard, paste OTP, screen readers
-
-### Regression
-
-- [ ] M3 patient staff APIs green
-- [ ] M7 practitioner schedule/leave/availability green
-- [ ] Unauthenticated Cognito/unset paths still coherent when `AUTH_PROVIDER≠otp`
-- [ ] PR #8 not retargeted/merged by this workstream
+See `docs/TDA-C3-IMPLEMENTATION-REPORT.md` for IMPLEMENTED vs remaining.
 
 ---
 
-## Explicit open items (do not invent)
+## Cognito deprecation criteria (must all be true)
 
-1. Exact invite permission key and who may mint patient vs practitioner invites.
-2. Whether staff-created practitioners default to `verificationStatus=verified`.
-3. Production SMS vendor (Twilio / SNS / other) — **after** C3 abstractions.
-4. Cognito deprecation milestone criteria.
-5. OTP subject scheme for `UserIdentity` under OTP issuer.
-6. Retention TTL for OTP rows and abandoned registration state.
+1. Existing Cognito users migrated or explicitly handled  
+2. OTP authentication reaches production parity  
+3. Authentication security review passes  
+4. Passwordless registration works  
+5. Passwordless login works  
+6. Session behavior is equivalent  
+7. RBAC is equivalent  
+8. Tenant isolation is equivalent  
+9. Production OTP delivery is reliable  
+10. Rollback strategy exists  
+11. Monitoring exists  
+12. No required production user depends exclusively on Cognito  
 
 ---
 

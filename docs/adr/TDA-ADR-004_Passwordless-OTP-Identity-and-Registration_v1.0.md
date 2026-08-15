@@ -5,7 +5,7 @@
 | **ADR ID** | TDA-ADR-004 |
 | **Title** | Passwordless Application-Managed OTP Identity & Self-Registration |
 | **Version** | 1.0 |
-| **Status** | PROPOSED — READY FOR HUMAN APPROVAL |
+| **Status** | APPROVED FOR IMPLEMENTATION (human, 2026-08-15) |
 | **Date** | 15 August 2026 |
 | **Repository** | `ravishori/Ai-Dentist-System-Webapp` |
 | **Change class** | C3 (security boundary / major architecture) per TDA-GOV-CMP-001 |
@@ -13,7 +13,7 @@
 | **Preserves** | AuthenticationPort; server-side `dc_session`; Organization tenancy; Membership/RBAC ownership; User ≠ Patient ≠ Practitioner |
 | **Does not authorize** | Production SMS/email provider purchase; production deploy; merge to `main`; weakening of M7 practitioner APIs |
 
-AI-generated documentation is non-authoritative until reviewed and approved (TDA-GOV-SOT-001 §16, TDA-GOV-CMP-001 §14). Cursor MUST NOT mark this ADR APPROVED.
+Human approval for implementation recorded 2026-08-15. Historical ADR-002/003 text remains retained with supersession banners.
 
 Product decision pack accepted 2026-08-15 (human-provided):
 
