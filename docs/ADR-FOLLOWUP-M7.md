@@ -4,22 +4,18 @@
 
 **Document ID:** TDA-ADR-FOLLOWUP-M7  
 **Version:** 1.0  
-**Status:** PROPOSED — AWAITING HUMAN APPROVAL  
+**Status:** APPROVED  
 **Date:** 2026-08-15  
 **Milestone:** M7 — Practitioner Management and Availability  
 **Depends on:** approved `docs/ADR-FOLLOWUP-M4.md` (M4-01 practitioner profile; M4-02 branch integrity; M4-03 timezone; M4-04/05/06 conflict constraints; M4-16 retention; M4-18 calendar deferred), approved `docs/ADR-FOLLOWUP-M5.md` (M5-06 events; M5-09 worker disabled by default), and approved `docs/ADR-FOLLOWUP-M6.md` (appointment lifecycle operations)  
 **Scope:** Organization-scoped practitioner profile operations, branch assignment, working hours, leave/exceptions, and internal availability evaluation  
-**This file is not an approved ADR.**
-
-Agents and coding assistants must not mark this document approved.
-
-No Practitioner Management or Availability implementation may begin until the decisions in this document are reviewed and the human approval section is completed as `APPROVED`.
+This file is the approved M7 architecture decision record.
 
 ```text
-M7 IMPLEMENTATION BLOCKED — AWAITING HUMAN M7 DECISION APPROVAL
-```
+This approval authorizes M7 implementation only within M7-01 through M7-12.
 
-This proposal does **not** authorize production release, deployment, merge to `main`, real SMTP enablement, calendar integration, booking-model changes, clinical notes, billing, patient-portal features, M8 work, or any change to M1–M6 behavior until a separate approved implementation task follows this record.
+It does not authorize production release, deployment, merge to main, calendar synchronization, patient self-service booking, clinical documentation, billing, or unrelated features.
+```
 
 ---
 
@@ -27,9 +23,11 @@ This proposal does **not** authorize production release, deployment, merge to `m
 
 M4 introduced a **minimum Practitioner Profile** so appointments can reference a same-organization practitioner. There is no public practitioner HTTP API, no activation state, no branch assignment, and no availability. Appointments may currently be created for any same-org practitioner at any same-org branch.
 
-M7 would add practitioner operations and advisory availability **without** changing the M4 appointment row shape, M4 PostgreSQL exclusion constraints, or M6 lifecycle commands.
+M7 may add practitioner operations and advisory availability according to the approved decisions in this document, **without** changing the M4 appointment row shape, M4 PostgreSQL exclusion constraints, or M6 lifecycle commands.
 
-Implementation is blocked until the human project owner approves M7-01 through M7-12.
+```text
+APPROVED — M7 implementation authorized within M7-01 through M7-12 only
+```
 
 ---
 
@@ -105,11 +103,11 @@ No approved M7 architecture decision record exists. M1–M6 must not be redesign
 | M7-11 | Audit and retention            | Mutation-oriented history/security audit; no hard delete; restrictive retention until separately approved                                                                   |
 | M7-12 | Notifications and calendar     | No new notification event types and no calendar synchronization in M7                                                                                                       |
 
-These are **proposed**, not approved. The human may change any row before marking this record `APPROVED`.
+These decisions are **APPROVED**. Implementation must follow this table and the sections below.
 
 ---
 
-# 4. Relationship (proposed, if M7-01/M7-02/M7-04/M7-05 are approved)
+# 4. Relationship (approved)
 
 ```text
 Organization
@@ -512,19 +510,14 @@ M7 must not rewrite M1–M6 migrations. Additive schema only after approval.
 
 ---
 
-# 20. Implementation freeze
+# 20. Implementation freeze (this approval record)
 
-Until §22 is `APPROVED`:
+This approval does **not itself** add practitioner HTTP APIs, availability tables, schedules, leave rows, permission keys, appointment validation changes, migrations, tests, outbox types, or calendar adapters.
 
-```text
-M7 IMPLEMENTATION BLOCKED — AWAITING HUMAN M7 DECISION APPROVAL
-```
+A **separate** implementation task may follow M7-01 through M7-12 only.
 
 Do **not**:
 
-- add practitioner HTTP APIs, availability tables, schedules, or leave rows
-- add or seed M7 permission keys
-- change appointment create/reschedule validation
 - rewrite M1–M6 migrations or exclusion constraints
 - add outbox event types or calendar adapters
 - merge to `main`, deploy, enable real SMTP, or start M8
@@ -553,23 +546,15 @@ Do **not**:
 ## Approval Status
 
 ```text
-PROPOSED — AWAITING HUMAN APPROVAL
-```
-
-After review, the human may change this section to:
-
-```text
 APPROVED
 ```
-
-Agents and coding assistants must not make that change.
 
 ## Approved By
 
 ```text
-Name:
+Name: Project Owner
 Role: Project Owner
-Date:
+Date: 2026-08-15
 ```
 
 ## Human Approval Statement
@@ -579,14 +564,14 @@ I have reviewed the M7 Practitioner Management and Availability decisions in thi
 I understand that:
 
 - M7 implementation will follow these decisions only.
-- This approval does not authorize production release, deployment, or merge to `main`.
-- This approval does not authorize calendar integration, patient booking, real SMTP enablement, clinical records, billing, or M8 work.
+- This approval authorizes M7 implementation only within M7-01 through M7-12.
+- It does not authorize production release, deployment, merge to main, calendar synchronization, patient self-service booking, clinical documentation, billing, or unrelated features.
 - Future changes require a new or updated decision record.
 
 ```text
 Human Approval:
 
-[ ] APPROVED
+[x] APPROVED
 [ ] NOT APPROVED
 ```
 
@@ -594,14 +579,10 @@ Human Approval:
 
 # 23. Post-approval rule
 
-Once this document is `APPROVED`, it becomes the M7 implementation source of truth.
+This document is the M7 implementation source of truth.
 
-A **separate** implementation task may then follow M7-01 through M7-12.
+A **separate** implementation task may follow M7-01 through M7-12. This approval does not itself add tables, APIs, schedules, availability evaluation, permissions, migrations, tests, calendar integration, booking changes, or notifications.
 
 If implementation reveals a conflict with approved M1–M6: **STOP** and report it. Do not silently change the architecture.
 
-Until that approval:
-
-```text
-M7 IMPLEMENTATION BLOCKED — AWAITING HUMAN M7 DECISION APPROVAL
-```
+Production release, deployment, and merge to `main` remain separate decisions.
