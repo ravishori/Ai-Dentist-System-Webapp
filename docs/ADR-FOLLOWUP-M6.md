@@ -117,20 +117,20 @@ M1–M5 architecture is not to be redesigned by M6.
 
 # 3. Decision summary (proposed)
 
-| #     | Decision                       | Proposed decision                                                                                                                                                          |
-| ----- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M6-01 | Status lifecycle               | Strict forward transitions only. No skipped states. `NO_SHOW` only from `CONFIRMED`. Terminal: `COMPLETED`, `NO_SHOW`, `CANCELLED`.                                        |
-| M6-02 | Cancel after check-in / start  | Cancel **allowed** after check-in. Cancel **not allowed** after `IN_PROGRESS`. This **narrows** M4 `canCancel`.                                                            |
-| M6-03 | Who may operate                | `STAFF`, `PRACTITIONER`, `PRACTICE_ADMIN` for all M6 commands. `PATIENT` and `SYSTEM_ADMIN` remain denied.                                                                 |
-| M6-04 | New permissions                | `appointment.confirm`, `appointment.check_in`, `appointment.start`, `appointment.complete`, `appointment.no_show`. Do not reuse `appointment.update.tenant`.               |
-| M6-05 | Command API                    | Dedicated `POST /api/appointments/:id/{confirm,check-in,start,complete,no-show}`. No PATCH status. Do not implement until approved.                                        |
-| M6-06 | Time rules                     | Check-in from 30 minutes before start until scheduled end. Late check-in allowed in that window. No-show only after scheduled start. Complete allowed after scheduled end. |
-| M6-07 | Conflict / slot release        | Confirm existing M4 exclusions: `COMPLETED`, `NO_SHOW`, `CANCELLED` release the slot; the four active statuses continue to block overlap.                                  |
-| M6-08 | History and audit              | One history event and one `security_events` row per successful transition; actor is the authenticated user.                                                                |
-| M6-09 | Notifications                  | **No new notification event types in M6.** M5 remains created / rescheduled / cancelled only.                                                                              |
-| M6-10 | Clinical / billing on complete | **No.** Completion changes lifecycle status only.                                                                                                                          |
-| M6-11 | Reopen                         | **No reopen in M6.** Terminal states stay terminal.                                                                                                                        |
-| M6-12 | Retention / hard delete        | Preserve M4-16: no hard delete.                                                                                                                                            |
+| #     | Decision                       | Proposed decision                                                                                                                                                                                                          |
+| ----- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M6-01 | Status lifecycle               | Strict forward transitions only. No skipped states. `NO_SHOW` only from `CONFIRMED`. Terminal: `COMPLETED`, `NO_SHOW`, `CANCELLED`.                                                                                        |
+| M6-02 | Cancel after check-in / start  | Cancel **allowed** after check-in. Cancel **not allowed** after `IN_PROGRESS`. This **narrows** M4 `canCancel`.                                                                                                            |
+| M6-03 | Who may operate                | `STAFF`, `PRACTITIONER`, `PRACTICE_ADMIN` for all M6 commands. `PATIENT` and `SYSTEM_ADMIN` remain denied.                                                                                                                 |
+| M6-04 | New permissions                | `appointment.confirm`, `appointment.check_in`, `appointment.start`, `appointment.complete`, `appointment.no_show`. Do not reuse `appointment.update.tenant`.                                                               |
+| M6-05 | Command API                    | Dedicated `POST /api/appointments/:id/{confirm,check-in,start,complete,no-show}`. No PATCH status. Do not implement until approved.                                                                                        |
+| M6-06 | Time rules                     | Check-in from 30 minutes before start until scheduled end. Start after `CHECKED_IN` with no extra time rule. Complete after `IN_PROGRESS` with no extra time rule. `NO_SHOW` from `CONFIRMED` at or after scheduled start. |
+| M6-07 | Conflict / slot release        | Confirm existing M4 exclusions: `COMPLETED`, `NO_SHOW`, `CANCELLED` release the slot; the four active statuses continue to block overlap.                                                                                  |
+| M6-08 | History and audit              | One history event and one `security_events` row per successful transition; actor is the authenticated user.                                                                                                                |
+| M6-09 | Notifications                  | **No new notification event types in M6.** M5 remains created / rescheduled / cancelled only.                                                                                                                              |
+| M6-10 | Clinical / billing on complete | **No.** Completion changes lifecycle status only.                                                                                                                                                                          |
+| M6-11 | Reopen                         | **No reopen in M6.** Terminal states stay terminal.                                                                                                                                                                        |
+| M6-12 | Retention / hard delete        | Preserve M4-16: no hard delete.                                                                                                                                                                                            |
 
 These are **proposed**, not approved. The human may change any row before marking this record `APPROVED`.
 
@@ -301,22 +301,23 @@ All comparisons use the appointment’s stored `startAtUtc` / `endAtUtc` (UTC in
 
 ## Proposed
 
-| Rule                         | Proposed default                                                     |
-| ---------------------------- | -------------------------------------------------------------------- |
-| Earliest check-in            | 30 minutes before `startAtUtc`                                       |
-| Late check-in                | Allowed until `endAtUtc`                                             |
-| Check-in after scheduled end | **Not allowed**                                                      |
-| Earliest no-show             | At or after `startAtUtc`, and only from `CONFIRMED`                  |
-| No-show after scheduled end  | **Allowed** (patient never arrived)                                  |
-| Start                        | Allowed at or after earliest check-in window, only from `CHECKED_IN` |
-| Complete                     | Allowed from `IN_PROGRESS` even after `endAtUtc`                     |
-| Confirm                      | No clock constraint; only from `REQUESTED`                           |
+```text
+Check-in is allowed from 30 minutes before the scheduled start until the scheduled end.
+
+Start is allowed only after CHECKED_IN. There is no additional scheduled-time restriction.
+
+Complete is allowed only after IN_PROGRESS. There is no additional scheduled-time restriction.
+
+NO_SHOW is allowed only from CONFIRMED at or after the scheduled start.
+
+These rules do not create appointment availability, calendar, clinical, billing, or notification behavior.
+```
 
 There is **no** automatic no-show job in M6. Recording no-show is an explicit staff command.
 
 ## Requires human confirmation
 
-Whether 30 minutes is the correct check-in lead time, whether a grace period after start should be required before no-show, and whether complete/start may occur after the scheduled end.
+Whether 30 minutes is the correct check-in lead time, and whether a grace period after start should be required before no-show. Start and complete have no additional scheduled-time restriction beyond `CHECKED_IN` and `IN_PROGRESS`.
 
 ---
 
@@ -479,7 +480,7 @@ Do **not**:
 3. Role access for each command (M6-03). Proposed: tenant staff only.
 4. New permission key names and grants (M6-04).
 5. Command routes (M6-05). Proposed paths above; do not implement until approved.
-6. Check-in lead time, late check-in, no-show timing, and after-end operations (M6-06).
+6. Time rules (M6-06). Proposed: check-in from 30 minutes before start until scheduled end; start after `CHECKED_IN` with no extra time rule; complete after `IN_PROGRESS` with no extra time rule; `NO_SHOW` from `CONFIRMED` at or after scheduled start.
 7. Slot release for `COMPLETED` / `NO_SHOW` / `CANCELLED` (M6-07). Proposed: confirm current M4 exclusions.
 8. History event names and security-event actions (M6-08).
 9. Whether any M6 operation creates a notification intent (M6-09). Proposed: **none**.
