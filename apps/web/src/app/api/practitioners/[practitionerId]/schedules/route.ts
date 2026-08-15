@@ -1,8 +1,29 @@
-import { handlePractitionerCreateSchedule } from "@dentalcare/application";
+import {
+  handlePractitionerCreateSchedule,
+  handlePractitionerListSchedules,
+} from "@dentalcare/application";
+import { requestedOrganizationId } from "../../../../../infrastructure/http/organization";
 import { getPractitionerService } from "../../../../../infrastructure/practitioner/service";
-import { postPractitionerCommand } from "../../../../../infrastructure/practitioner/http";
+import {
+  identityFrom,
+  jsonResponse,
+  postPractitionerCommand,
+} from "../../../../../infrastructure/practitioner/http";
 
 export const dynamic = "force-dynamic";
+
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ practitionerId: string }> },
+): Promise<Response> {
+  const { practitionerId } = await context.params;
+  const result = await handlePractitionerListSchedules(getPractitionerService(), {
+    identity: await identityFrom(),
+    organizationId: requestedOrganizationId(request),
+    practitionerId,
+  });
+  return jsonResponse(result, "practitioner_list_schedules");
+}
 
 export async function POST(
   request: Request,

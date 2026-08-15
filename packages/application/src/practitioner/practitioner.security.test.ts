@@ -23,6 +23,8 @@ import {
   handlePractitionerDeactivate,
   handlePractitionerGet,
   handlePractitionerList,
+  handlePractitionerListSchedules,
+  handlePractitionerListUnavailability,
   handlePractitionerUnassignBranch,
   handlePractitionerUpdate,
 } from "./http.js";
@@ -572,6 +574,91 @@ describe("practitioner authorization", () => {
     });
     expect(availability.status).toBe(404);
     expectNoLeak(availability.body);
+  });
+});
+
+describe("practitioner schedule and leave list reads", () => {
+  it("lists schedules and unavailability after create for authorized staff", async () => {
+    const h = harness();
+    const created = await handlePractitionerCreate(h.service, {
+      identity: identity(ADMIN_A),
+      organizationId: ORG_A,
+      body: { userId: LINK_A, displayName: "Dr List" },
+    });
+    const id = (created.body.practitioner as { id: string }).id;
+    await handlePractitionerAssignBranch(h.service, {
+      identity: identity(ADMIN_A),
+      organizationId: ORG_A,
+      practitionerId: id,
+      body: { branchId: "branch_a" },
+    });
+    const schedule = await handlePractitionerCreateSchedule(h.service, {
+      identity: identity(STAFF_A),
+      organizationId: ORG_A,
+      practitionerId: id,
+      body: {
+        branchId: "branch_a",
+        timezone: "Europe/London",
+        intervals: [{ weekday: 1, startMinute: 540, endMinute: 1020 }],
+      },
+    });
+    expect(schedule.status).toBe(201);
+    const leave = await handlePractitionerCreateUnavailability(h.service, {
+      identity: identity(STAFF_A),
+      organizationId: ORG_A,
+      practitionerId: id,
+      body: {
+        kind: "leave",
+        startAtUtc: "2026-09-02T08:00:00.000Z",
+        endAtUtc: "2026-09-02T12:00:00.000Z",
+        timezone: "Europe/London",
+      },
+    });
+    expect(leave.status).toBe(201);
+
+    const schedules = await handlePractitionerListSchedules(h.service, {
+      identity: identity(STAFF_A),
+      organizationId: ORG_A,
+      practitionerId: id,
+    });
+    expect(schedules.status).toBe(200);
+    expect(schedules.body.schedules).toHaveLength(1);
+    expect((schedules.body.schedules as Array<{ branchId: string }>)[0]?.branchId).toBe("branch_a");
+
+    const unavailability = await handlePractitionerListUnavailability(h.service, {
+      identity: identity(STAFF_A),
+      organizationId: ORG_A,
+      practitionerId: id,
+    });
+    expect(unavailability.status).toBe(200);
+    expect(unavailability.body.unavailability).toHaveLength(1);
+    expect(
+      (unavailability.body.unavailability as Array<{ kind: string; status: string }>)[0],
+    ).toMatchObject({ kind: "leave", status: "active" });
+  });
+
+  it("denies PATIENT list reads and returns 404 across tenants", async () => {
+    const h = harness();
+    const created = await handlePractitionerCreate(h.service, {
+      identity: identity(ADMIN_A),
+      organizationId: ORG_A,
+      body: { userId: LINK_A, displayName: "Dr Secret" },
+    });
+    const id = (created.body.practitioner as { id: string }).id;
+    const denied = await handlePractitionerListSchedules(h.service, {
+      identity: identity(PATIENT_ROLE),
+      organizationId: ORG_A,
+      practitionerId: id,
+    });
+    expect(denied.status).toBe(403);
+    expectNoLeak(denied.body);
+    const cross = await handlePractitionerListUnavailability(h.service, {
+      identity: identity(STAFF_B),
+      organizationId: ORG_B,
+      practitionerId: id,
+    });
+    expect(cross.status).toBe(404);
+    expectNoLeak(cross.body);
   });
 });
 

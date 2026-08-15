@@ -333,6 +333,19 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
     );
   }
 
+  async listSchedules(
+    organizationId: string,
+    practitionerId: string,
+  ): Promise<readonly PractitionerSchedule[]> {
+    this.assertAvailable();
+    return [...this.schedules.values()]
+      .filter(
+        (schedule) =>
+          schedule.organizationId === organizationId && schedule.practitionerId === practitionerId,
+      )
+      .sort((left, right) => left.branchId.localeCompare(right.branchId));
+  }
+
   async createUnavailability(
     context: PractitionerWriteContext,
     practitionerId: string,

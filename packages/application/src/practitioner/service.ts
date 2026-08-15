@@ -402,6 +402,56 @@ export class PractitionerApplicationService {
     }
   }
 
+  async listSchedules(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    practitionerId: string | undefined,
+  ): Promise<PractitionerServiceResult<readonly PractitionerSchedule[]>> {
+    const gate = await this.gate(identity, organizationId, "practitioner.read.tenant");
+    if (!gate.ok) {
+      return gate;
+    }
+    const id = normalizeId(practitionerId);
+    if (!id) {
+      return invalid();
+    }
+    try {
+      const existing = await this.practitioners.findByOrganizationAndId(gate.organizationId, id);
+      if (!existing) {
+        return notFound();
+      }
+      const schedules = await this.practitioners.listSchedules(gate.organizationId, id);
+      return { ok: true, status: 200, data: schedules };
+    } catch {
+      return unavailable();
+    }
+  }
+
+  async listUnavailability(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    practitionerId: string | undefined,
+  ): Promise<PractitionerServiceResult<readonly PractitionerUnavailability[]>> {
+    const gate = await this.gate(identity, organizationId, "practitioner.read.tenant");
+    if (!gate.ok) {
+      return gate;
+    }
+    const id = normalizeId(practitionerId);
+    if (!id) {
+      return invalid();
+    }
+    try {
+      const existing = await this.practitioners.findByOrganizationAndId(gate.organizationId, id);
+      if (!existing) {
+        return notFound();
+      }
+      const unavailability = await this.practitioners.listUnavailability(gate.organizationId, id);
+      return { ok: true, status: 200, data: unavailability };
+    } catch {
+      return unavailable();
+    }
+  }
+
   async availability(
     identity: AuthenticatedIdentity | null,
     organizationId: string | undefined,

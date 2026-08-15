@@ -23,6 +23,8 @@ export {
   handlePractitionerReplaceSchedule,
   handlePractitionerCreateUnavailability,
   handlePractitionerCancelUnavailability,
+  handlePractitionerListSchedules,
+  handlePractitionerListUnavailability,
   handlePractitionerAvailability,
 } from "./http.js";
 export { InMemoryPractitionerRepository } from "./in-memory-repository.js";

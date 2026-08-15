@@ -333,6 +333,42 @@ export async function handlePractitionerCancelUnavailability(
   return toHttpResult(result, (record) => ({ unavailability: toPublicUnavailability(record) }));
 }
 
+export async function handlePractitionerListSchedules(
+  service: PractitionerApplicationService,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    practitionerId?: string;
+  },
+): Promise<PractitionerHttpResult> {
+  const result = await service.listSchedules(
+    input.identity,
+    input.organizationId,
+    input.practitionerId,
+  );
+  return toHttpResult(result, (schedules) => ({
+    schedules: schedules.map(toPublicSchedule),
+  }));
+}
+
+export async function handlePractitionerListUnavailability(
+  service: PractitionerApplicationService,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    practitionerId?: string;
+  },
+): Promise<PractitionerHttpResult> {
+  const result = await service.listUnavailability(
+    input.identity,
+    input.organizationId,
+    input.practitionerId,
+  );
+  return toHttpResult(result, (records) => ({
+    unavailability: records.map(toPublicUnavailability),
+  }));
+}
+
 export async function handlePractitionerAvailability(
   service: PractitionerApplicationService,
   input: {

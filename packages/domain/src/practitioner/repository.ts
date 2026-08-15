@@ -86,6 +86,10 @@ export interface PractitionerManagementRepository extends PractitionerRepository
     practitionerId: string,
     branchId: string,
   ): Promise<PractitionerSchedule | null>;
+  listSchedules(
+    organizationId: string,
+    practitionerId: string,
+  ): Promise<readonly PractitionerSchedule[]>;
   createUnavailability(
     context: PractitionerWriteContext,
     practitionerId: string,

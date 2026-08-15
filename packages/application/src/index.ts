@@ -111,6 +111,8 @@ export {
   handlePractitionerReplaceSchedule,
   handlePractitionerCreateUnavailability,
   handlePractitionerCancelUnavailability,
+  handlePractitionerListSchedules,
+  handlePractitionerListUnavailability,
   handlePractitionerAvailability,
 } from "./practitioner/index.js";
 export type { PractitionerHttpResult } from "./practitioner/index.js";

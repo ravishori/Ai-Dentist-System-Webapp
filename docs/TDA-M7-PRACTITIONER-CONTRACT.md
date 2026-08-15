@@ -162,8 +162,10 @@ Returned on deactivate, unassign, unavailability create, and availability GET. N
 | `POST` | `/api/practitioners/:id/branches`                          | `practitioner.assignment.manage` |
 | `POST` | `/api/practitioners/:id/branches/:branchId/unassign`       | `practitioner.assignment.manage` |
 | `POST` | `/api/practitioners/:id/schedules`                         | `practitioner.schedule.manage`   |
+| `GET`  | `/api/practitioners/:id/schedules`                         | `practitioner.read.tenant`       |
 | `POST` | `/api/practitioners/:id/schedules/:scheduleId/replace`     | `practitioner.schedule.manage`   |
 | `POST` | `/api/practitioners/:id/unavailability`                    | `practitioner.leave.manage`      |
+| `GET`  | `/api/practitioners/:id/unavailability`                    | `practitioner.read.tenant`       |
 | `POST` | `/api/practitioners/:id/unavailability/:intervalId/cancel` | `practitioner.leave.manage`      |
 | `GET`  | `/api/practitioners/:id/availability`                      | `practitioner.availability.read` |
 

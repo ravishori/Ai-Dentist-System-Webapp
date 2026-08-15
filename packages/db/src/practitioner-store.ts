@@ -354,6 +354,18 @@ export class PrismaPractitionerRepository implements PractitionerManagementRepos
     return record ? toSchedule(record) : null;
   }
 
+  async listSchedules(
+    organizationId: string,
+    practitionerId: string,
+  ): Promise<readonly PractitionerSchedule[]> {
+    const records = await this.prisma.practitionerSchedule.findMany({
+      where: { organizationId, practitionerId },
+      include: { intervals: true },
+      orderBy: { branchId: "asc" },
+    });
+    return records.map(toSchedule);
+  }
+
   async createUnavailability(
     context: PractitionerWriteContext,
     practitionerId: string,

@@ -65,7 +65,7 @@ export default function PractitionerDetailPage() {
         <PageHeader
           eyebrow="Practitioner detail"
           title="Profile & availability"
-          lead="Update profile, assign branches, write schedules/leave, and query advisory availability windows."
+          lead="Update profile, assign branches, manage schedules and leave, and query advisory availability."
         />
         <AuthGate>
           <PractitionerDetail practitionerId={params.practitionerId} />
@@ -78,13 +78,13 @@ export default function PractitionerDetailPage() {
 function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
   const [practitioner, setPractitioner] = useState<Practitioner | null>(null);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [leaves, setLeaves] = useState<Unavailability[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [branchId, setBranchId] = useState("");
-  const [lastSchedule, setLastSchedule] = useState<Schedule | null>(null);
-  const [lastLeave, setLastLeave] = useState<Unavailability | null>(null);
   const [availability, setAvailability] = useState<AvailabilityResult | null>(null);
 
   const [scheduleForm, setScheduleForm] = useState({
@@ -112,12 +112,27 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
   const reload = useCallback(async () => {
     setError(null);
     try {
-      const body = await apiFetch<{ practitioner: Practitioner; assignments: Assignment[] }>(
-        `/api/practitioners/${practitionerId}`,
-      );
-      setPractitioner(body.practitioner);
-      setAssignments(body.assignments);
-      setDisplayName(body.practitioner.displayName ?? "");
+      const [profile, scheduleBody, leaveBody] = await Promise.all([
+        apiFetch<{ practitioner: Practitioner; assignments: Assignment[] }>(
+          `/api/practitioners/${practitionerId}`,
+        ),
+        apiFetch<{ schedules: Schedule[] }>(`/api/practitioners/${practitionerId}/schedules`),
+        apiFetch<{ unavailability: Unavailability[] }>(
+          `/api/practitioners/${practitionerId}/unavailability`,
+        ),
+      ]);
+      setPractitioner(profile.practitioner);
+      setAssignments(profile.assignments);
+      setDisplayName(profile.practitioner.displayName ?? "");
+      setSchedules(scheduleBody.schedules);
+      setLeaves(leaveBody.unavailability);
+      setReplaceScheduleId((current) => current || scheduleBody.schedules[0]?.id || "");
+      setCancelIntervalId((current) => {
+        if (current) {
+          return current;
+        }
+        return leaveBody.unavailability.find((item) => item.status === "active")?.id ?? "";
+      });
     } catch (err) {
       setPractitioner(null);
       setError(describeError(err));
@@ -239,11 +254,9 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
           }),
         },
       );
-      setLastSchedule(body.schedule);
       setReplaceScheduleId(body.schedule.id);
-      setMessage(
-        `Created schedule ${body.schedule.id}. There is no schedule list GET — keep this id.`,
-      );
+      await reload();
+      setMessage(`Created schedule ${body.schedule.id}.`);
     });
   }
 
@@ -265,7 +278,8 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
           }),
         },
       );
-      setLastSchedule(body.schedule);
+      setReplaceScheduleId(body.schedule.id);
+      await reload();
       setMessage(`Replaced schedule ${body.schedule.id}.`);
     });
   }
@@ -285,8 +299,8 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
           endAtUtc: new Date(leaveForm.endAtLocal).toISOString(),
         }),
       });
-      setLastLeave(body.unavailability);
       setCancelIntervalId(body.unavailability.id);
+      await reload();
       const conflictCount = Array.isArray(body.conflicts) ? body.conflicts.length : 0;
       setMessage(
         conflictCount > 0
@@ -303,7 +317,7 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
         `/api/practitioners/${practitionerId}/unavailability/${cancelIntervalId.trim()}/cancel`,
         { method: "POST", body: JSON.stringify({}) },
       );
-      setLastLeave(body.unavailability);
+      await reload();
       setMessage(`Cancelled unavailability ${body.unavailability.id}.`);
     });
   }
@@ -436,11 +450,64 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
       </div>
 
       <div className="panel stack">
-        <p className="eyebrow">Weekly schedule (write-only list)</p>
-        <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
-          Schedules are created/replaced via POST. There is no GET directory of schedules — store
-          returned schedule ids from create responses.
-        </p>
+        <p className="eyebrow">Weekly schedules</p>
+        {schedules.length === 0 ? (
+          <p className="muted" style={{ margin: 0 }}>
+            No schedules yet. Create one per assigned branch. Overlapping weekday intervals are
+            rejected by the backend.
+          </p>
+        ) : (
+          <div className="table-wrap">
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Schedule</th>
+                  <th>Branch</th>
+                  <th>Timezone</th>
+                  <th>Intervals</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {schedules.map((schedule) => (
+                  <tr key={schedule.id}>
+                    <td>
+                      <code>{schedule.id}</code>
+                    </td>
+                    <td>
+                      <code>{schedule.branchId}</code>
+                    </td>
+                    <td>{schedule.timezone}</td>
+                    <td>
+                      {schedule.intervals
+                        .map(
+                          (interval) =>
+                            `${WEEKDAY_LABELS[interval.weekday] ?? interval.weekday} ${formatMinute(interval.startMinute)}–${formatMinute(interval.endMinute)}`,
+                        )
+                        .join(", ")}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-ghost"
+                        type="button"
+                        onClick={() => {
+                          setReplaceScheduleId(schedule.id);
+                          setScheduleForm((current) => ({
+                            ...current,
+                            branchId: schedule.branchId,
+                            timezone: schedule.timezone,
+                          }));
+                        }}
+                      >
+                        Use for replace
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <form className="stack" onSubmit={onCreateSchedule}>
           <div className="grid-2">
             <div className="field">
@@ -500,7 +567,7 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
                 id="replaceScheduleId"
                 value={replaceScheduleId}
                 onChange={(e) => setReplaceScheduleId(e.target.value)}
-                placeholder="From create response"
+                placeholder="From schedule list"
               />
             </div>
           </div>
@@ -518,16 +585,65 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
             </button>
           </div>
         </form>
-        {lastSchedule ? (
-          <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
-            Last schedule <code>{lastSchedule.id}</code> · branch{" "}
-            <code>{lastSchedule.branchId}</code> · {lastSchedule.intervals.length} interval(s)
-          </p>
-        ) : null}
       </div>
 
       <div className="panel stack">
-        <p className="eyebrow">Unavailability / leave (write-only list)</p>
+        <p className="eyebrow">Unavailability / leave</p>
+        <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
+          Leave is create + cancel only (no field edit). Cancel an interval, then create a new one
+          to change dates.
+        </p>
+        {leaves.length === 0 ? (
+          <p className="muted" style={{ margin: 0 }}>
+            No leave or break intervals recorded.
+          </p>
+        ) : (
+          <div className="table-wrap">
+            <table className="data">
+              <thead>
+                <tr>
+                  <th>Interval</th>
+                  <th>Kind</th>
+                  <th>Status</th>
+                  <th>Window</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {leaves.map((leave) => (
+                  <tr key={leave.id}>
+                    <td>
+                      <code>{leave.id}</code>
+                    </td>
+                    <td>{leave.kind}</td>
+                    <td>
+                      <span
+                        className={`badge ${leave.status === "active" ? "badge-warn" : "badge-neutral"}`}
+                      >
+                        {leave.status}
+                      </span>
+                    </td>
+                    <td>
+                      {new Date(leave.startAtUtc).toLocaleString()} →{" "}
+                      {new Date(leave.endAtUtc).toLocaleString()}
+                    </td>
+                    <td>
+                      {leave.status === "active" ? (
+                        <button
+                          className="btn btn-ghost"
+                          type="button"
+                          onClick={() => setCancelIntervalId(leave.id)}
+                        >
+                          Select to cancel
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <form className="stack" onSubmit={onCreateLeave}>
           <div className="grid-2">
             <div className="field">
@@ -584,18 +700,13 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
               required
               value={cancelIntervalId}
               onChange={(e) => setCancelIntervalId(e.target.value)}
-              placeholder="From create response"
+              placeholder="From leave list"
             />
           </div>
           <button className="btn btn-secondary" type="submit" disabled={busy !== null}>
             {busy === "cancel-leave" ? "Cancelling…" : "Cancel interval"}
           </button>
         </form>
-        {lastLeave ? (
-          <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
-            Last interval <code>{lastLeave.id}</code> · {lastLeave.kind} · {lastLeave.status}
-          </p>
-        ) : null}
       </div>
 
       <div className="panel stack">
@@ -718,6 +829,15 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
       </div>
     </div>
   );
+}
+
+function formatMinute(value: number): string {
+  if (value === 1440) {
+    return "24:00";
+  }
+  const hours = Math.floor(value / 60);
+  const minutes = value % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
 
 function describeError(err: unknown): string {

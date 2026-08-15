@@ -68,6 +68,24 @@ test("practitioner API denies unauthenticated access", async ({ request }) => {
   expect(body.error).toBe("unauthenticated");
 });
 
+test("practitioner schedule list API denies unauthenticated access", async ({ request }) => {
+  const response = await request.get("/api/practitioners/prac_untrusted/schedules", {
+    headers: { "x-organization-id": "org_untrusted" },
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
+});
+
+test("practitioner leave list API denies unauthenticated access", async ({ request }) => {
+  const response = await request.get("/api/practitioners/prac_untrusted/unavailability", {
+    headers: { "x-organization-id": "org_untrusted" },
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
+});
+
 test("notification API denies unauthenticated access", async ({ request }) => {
   const response = await request.get("/api/notifications/outbox_untrusted", {
     headers: { "x-organization-id": "org_untrusted" },
