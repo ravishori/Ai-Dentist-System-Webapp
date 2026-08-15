@@ -155,7 +155,9 @@ Appointment authorization uses `AuthorizationPort.authorize()`. Appointment appl
 | `POST`  | `/api/appointments/:appointmentId/reschedule` | `appointment.reschedule`    | Schedule change                                                       |
 | `POST`  | `/api/appointments/:appointmentId/cancel`     | `appointment.cancel`        | Status → `CANCELLED`                                                  |
 
-No `DELETE`. No confirm / check-in / start / complete / no-show / history HTTP routes. No practitioner management routes. Prefix is `/api/...`, not `/api/v1`.
+No `DELETE`. No history HTTP routes. No practitioner management routes. Prefix is `/api/...`, not `/api/v1`.
+
+Confirm, check-in, start, complete, and no-show are specified in `docs/TDA-M6-APPOINTMENT-OPERATIONS-CONTRACT.md`.
 
 ### 7.1 Create body
 
@@ -215,7 +217,7 @@ Denied responses do not include patient names, emails, phones, dates of birth, a
 
 ## 8. Lifecycle helpers (M4)
 
-Cancel allowed from: `REQUESTED`, `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`.  
+Cancel allowed from: `REQUESTED`, `CONFIRMED`, `CHECKED_IN`. Cancel from `IN_PROGRESS` is denied (M6-02).  
 Reschedule allowed from: `REQUESTED`, `CONFIRMED`.
 
 Active scheduling statuses (occupy a slot): `REQUESTED`, `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`.  
@@ -258,17 +260,17 @@ They must not record:
 
 ## 11. Explicitly deferred
 
-| Topic                         | Status                               |
-| ----------------------------- | ------------------------------------ |
-| Confirm / check-in / complete | Deferred (statuses exist in DB only) |
-| Practitioner management API   | Deferred                             |
-| Branch-level authorization    | Deferred (M4-02)                     |
-| PATIENT self-access           | Denied (M4-08)                       |
-| SYSTEM_ADMIN appointment path | Denied (M4-09)                       |
-| Calendar integration          | Deferred (M4-18)                     |
-| Notification delivery         | Deferred (M4-19); outbox intent only |
-| Hard deletion                 | Not implemented                      |
-| Clinical domains              | Future milestones                    |
+| Topic                         | Status                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Confirm / check-in / complete | Implemented in M6; see `docs/TDA-M6-APPOINTMENT-OPERATIONS-CONTRACT.md` |
+| Practitioner management API   | Deferred                                                                |
+| Branch-level authorization    | Deferred (M4-02)                                                        |
+| PATIENT self-access           | Denied (M4-08)                                                          |
+| SYSTEM_ADMIN appointment path | Denied (M4-09)                                                          |
+| Calendar integration          | Deferred (M4-18)                                                        |
+| Notification delivery         | Deferred (M4-19); outbox intent only                                    |
+| Hard deletion                 | Not implemented                                                         |
+| Clinical domains              | Future milestones                                                       |
 
 ---
 
