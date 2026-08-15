@@ -51,6 +51,11 @@ export interface PractitionerManagementRepository extends PractitionerRepository
     context: PractitionerWriteContext,
     input: PractitionerCreateInput,
   ): Promise<Practitioner>;
+  setVerificationStatus(
+    context: PractitionerWriteContext,
+    practitionerId: string,
+    verificationStatus: import("./practitioner.js").PractitionerVerificationStatus,
+  ): Promise<Practitioner>;
   assignBranch(
     context: PractitionerWriteContext,
     practitionerId: string,

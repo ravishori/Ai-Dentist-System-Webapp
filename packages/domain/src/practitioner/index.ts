@@ -3,12 +3,14 @@ export const PRACTITIONER_BOUNDARY = "practitioner" as const;
 
 export {
   PRACTITIONER_STATUSES,
+  PRACTITIONER_VERIFICATION_STATUSES,
   UNAVAILABILITY_KINDS,
   UNAVAILABILITY_STATUSES,
   WEEKDAYS,
   AVAILABILITY_UNAVAILABLE_REASONS,
   OPERATIONAL_CONFLICT_REASONS,
   isPractitionerStatus,
+  isPractitionerVerificationStatus,
   isUnavailabilityKind,
   isUnavailabilityStatus,
   isWeekday,
@@ -17,6 +19,7 @@ export {
   PractitionerNotFoundError,
   type Practitioner,
   type PractitionerStatus,
+  type PractitionerVerificationStatus,
   type PractitionerCreateInput,
   type PractitionerUpdateInput,
   type PractitionerBranchAssignment,

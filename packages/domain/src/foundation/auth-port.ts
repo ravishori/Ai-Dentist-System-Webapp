@@ -7,7 +7,13 @@ import type { AuthenticatedIdentity } from "./authenticated-identity.js";
  * Application code depends on this port, not on Cognito SDK types.
  * Authorization (RBAC, tenant, permissions) is out of scope for M1.
  */
-export type AuthProviderId = "unset" | "managed";
+/**
+ * Authentication provider ids (TDA-ADR-004).
+ * - unset: fail-closed
+ * - managed: Cognito OIDC (coexistence)
+ * - otp: application-managed passwordless OTP
+ */
+export type AuthProviderId = "unset" | "managed" | "otp";
 
 export const AUTH_LOGIN_COOKIE = "dc_login";
 export const AUTH_SESSION_COOKIE = "dc_session";

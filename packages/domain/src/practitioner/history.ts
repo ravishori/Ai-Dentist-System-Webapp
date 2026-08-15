@@ -8,6 +8,7 @@ export const PRACTITIONER_HISTORY_EVENTS = [
   "schedule_replaced",
   "unavailability_created",
   "unavailability_cancelled",
+  "verification_updated",
 ] as const;
 
 export type PractitionerHistoryEvent = (typeof PRACTITIONER_HISTORY_EVENTS)[number];
@@ -31,6 +32,7 @@ export const PRACTITIONER_AUDIT_ACTIONS = [
   "practitioner.schedule.replace",
   "practitioner.leave.create",
   "practitioner.leave.cancel",
+  "practitioner.verify",
 ] as const;
 
 export type PractitionerAuditAction = (typeof PRACTITIONER_AUDIT_ACTIONS)[number];

@@ -42,6 +42,9 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "practitioner.schedule.manage",
       "practitioner.leave.manage",
       "practitioner.availability.read",
+      "invitation.patient.create",
+      "invitation.revoke",
+      "patient.link_user",
     ]);
     this.rolePermissions.set("PRACTITIONER", [
       "organization.read",
@@ -88,6 +91,12 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "practitioner.schedule.manage",
       "practitioner.leave.manage",
       "practitioner.availability.read",
+      "invitation.patient.create",
+      "invitation.practitioner.create",
+      "invitation.revoke",
+      "clinic_code.manage",
+      "practitioner.verify",
+      "patient.link_user",
     ]);
     this.rolePermissions.set("SYSTEM_ADMIN", [
       "organization.read",

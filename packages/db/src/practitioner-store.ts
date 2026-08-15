@@ -4,6 +4,7 @@ import {
   PractitionerNotFoundError,
   PractitionerValidationError,
   isPractitionerStatus,
+  isPractitionerVerificationStatus,
   isUnavailabilityKind,
   isUnavailabilityStatus,
   isWeekday,
@@ -27,7 +28,7 @@ export class PrismaPractitionerRepository implements PractitionerManagementRepos
 
   async create(organizationId: string, userId: string): Promise<Practitioner> {
     const record = await this.prisma.practitioner.create({
-      data: { organizationId, userId, status: "active" },
+      data: { organizationId, userId, status: "active", verificationStatus: "verified" },
     });
     return toPractitioner(record);
   }
@@ -78,6 +79,7 @@ export class PrismaPractitionerRepository implements PractitionerManagementRepos
             userId: input.userId,
             displayName: input.displayName,
             status: "active",
+            verificationStatus: input.verificationStatus ?? "verified",
           },
         });
         await writeAudit(tx, {
@@ -93,6 +95,27 @@ export class PrismaPractitionerRepository implements PractitionerManagementRepos
     } catch (error) {
       throw mapPersistenceError(error);
     }
+  }
+
+  async setVerificationStatus(
+    context: PractitionerWriteContext,
+    practitionerId: string,
+    verificationStatus: import("@dentalcare/domain").PractitionerVerificationStatus,
+  ): Promise<Practitioner> {
+    return this.mutate(context, practitionerId, async (tx, existing) => {
+      const updated = await tx.practitioner.update({
+        where: { id: existing.id },
+        data: { verificationStatus },
+      });
+      await writeAudit(tx, {
+        practitionerId: existing.id,
+        organizationId: context.organizationId,
+        actorUserId: context.actorUserId,
+        eventType: "verification_updated",
+        auditAction: "practitioner.verify",
+      });
+      return updated;
+    });
   }
 
   async updateByOrganizationAndId(
@@ -475,6 +498,7 @@ export class PrismaPractitionerRepository implements PractitionerManagementRepos
       userId: string;
       displayName: string | null;
       status: string;
+      verificationStatus: string;
       createdAt: Date;
       updatedAt: Date;
     }>,
@@ -552,6 +576,7 @@ function toPractitioner(record: {
   userId: string;
   displayName?: string | null;
   status: string;
+  verificationStatus: string;
   createdAt: Date;
   updatedAt: Date;
 }): Practitioner {
@@ -561,6 +586,9 @@ function toPractitioner(record: {
     userId: record.userId,
     displayName: record.displayName ?? undefined,
     status: isPractitionerStatus(record.status) ? record.status : "active",
+    verificationStatus: isPractitionerVerificationStatus(record.verificationStatus)
+      ? record.verificationStatus
+      : "pending",
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   };

@@ -190,6 +190,53 @@ export class PractitionerApplicationService {
     }
   }
 
+  /**
+   * Professional verification transition (TDA-ADR-004).
+   * Requires `practitioner.verify`. Practitioners cannot verify themselves.
+   */
+  async setVerificationStatus(
+    identity: AuthenticatedIdentity | null,
+    organizationId: string | undefined,
+    practitionerId: string | undefined,
+    verificationStatus: import("@dentalcare/domain").PractitionerVerificationStatus,
+  ): Promise<PractitionerServiceResult<PractitionerProfileView>> {
+    const gate = await this.gate(identity, organizationId, "practitioner.verify");
+    if (!gate.ok) {
+      return gate;
+    }
+    const id = normalizeId(practitionerId);
+    if (!id) {
+      return invalid();
+    }
+    try {
+      const existing = await this.practitioners.findByOrganizationAndId(gate.organizationId, id);
+      if (!existing) {
+        return {
+          ok: false,
+          status: 404,
+          error: "not_found",
+          message: "Practitioner not found.",
+        };
+      }
+      if (existing.userId === identity!.userId) {
+        return {
+          ok: false,
+          status: 403,
+          error: "forbidden",
+          message: "Practitioners cannot verify themselves.",
+        };
+      }
+      const practitioner = await this.practitioners.setVerificationStatus(
+        { organizationId: gate.organizationId, actorUserId: identity!.userId },
+        id,
+        verificationStatus,
+      );
+      return this.profileOf(practitioner);
+    } catch (error) {
+      return mapWriteError(error);
+    }
+  }
+
   async assignBranch(
     identity: AuthenticatedIdentity | null,
     organizationId: string | undefined,
@@ -701,6 +748,7 @@ export function toPublicPractitioner(practitioner: Practitioner): Record<string,
     userId: practitioner.userId,
     displayName: practitioner.displayName ?? null,
     status: practitioner.status,
+    verificationStatus: practitioner.verificationStatus,
     createdAt: practitioner.createdAt,
     updatedAt: practitioner.updatedAt,
   };
