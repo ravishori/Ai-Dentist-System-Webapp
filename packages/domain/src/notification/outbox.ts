@@ -16,13 +16,12 @@ export function isOutboxStatus(value: string): value is OutboxStatus {
 
 export const NOTIFICATION_MAX_ATTEMPTS = 5;
 
-/** Waits after transient failures 1–4 before attempts 2–5. The fifth value is the unused sixth-attempt cap. */
+/** Waits after transient failures 1–4 before attempts 2–5 (M5-07). Attempt 5 is terminal. */
 export const NOTIFICATION_RETRY_DELAYS_MS = [
   60_000,
   5 * 60_000,
   30 * 60_000,
   2 * 60 * 60_000,
-  6 * 60 * 60_000,
 ] as const;
 
 export const NOTIFICATION_ERROR_CATEGORIES = [

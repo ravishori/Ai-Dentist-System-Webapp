@@ -444,9 +444,7 @@ describe("outbox processing", () => {
 
   it("retries transient failures on the approved schedule then terminals", async () => {
     expect(NOTIFICATION_MAX_ATTEMPTS).toBe(5);
-    expect([...NOTIFICATION_RETRY_DELAYS_MS]).toEqual([
-      60_000, 300_000, 1_800_000, 7_200_000, 21_600_000,
-    ]);
+    expect([...NOTIFICATION_RETRY_DELAYS_MS]).toEqual([60_000, 300_000, 1_800_000, 7_200_000]);
     const h = harness();
     const seeded = await seedEligible(h);
     h.outbox.createPending({

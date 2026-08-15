@@ -78,7 +78,7 @@ Statuses: `pending`, `processing`, `sent`, `suppressed`, `failed_terminal`.
 - Idempotency key = outbox `id`. A successful send is never sent again.
 - Claim lease expires so interrupted work can be retried.
 - Max attempts: 5.
-- Transient backoff after attempts 1–4: 1 minute, 5 minutes, 30 minutes, 2 hours. After attempt 5 the intent is terminal (the listed 6-hour delay is not followed by a sixth automatic attempt).
+- Transient backoff after attempts 1–4: 1 minute, 5 minutes, 30 minutes, 2 hours. After attempt 5 the intent is terminal. There is no sixth delay and no sixth automatic attempt.
 - Permanent recipient, consent, opt-out, validation, and provider errors terminate immediately.
 
 Worker polling interval defaults to **60 seconds**. Processing remains off unless explicit validated configuration enables it.
