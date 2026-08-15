@@ -245,7 +245,7 @@ img {
   overflow: hidden;
   min-height: min(92vh, 820px);
   display: grid;
-  align-items: end;
+  align-items: flex-end;
   padding: clamp(5rem, 12vh, 8rem) 0 4rem;
 }
 
@@ -254,7 +254,12 @@ img {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(115deg, rgba(4, 58, 58, 0.88) 8%, rgba(10, 107, 107, 0.55) 48%, rgba(180, 220, 214, 0.35) 100%),
+    linear-gradient(
+      115deg,
+      rgba(4, 58, 58, 0.88) 8%,
+      rgba(10, 107, 107, 0.55) 48%,
+      rgba(180, 220, 214, 0.35) 100%
+    ),
     radial-gradient(circle at 78% 28%, rgba(255, 255, 255, 0.28), transparent 36%),
     linear-gradient(160deg, #083f3f, #1b8b86 55%, #d7efe9);
   animation: heroWash 14s ease-in-out infinite alternate;
@@ -267,11 +272,7 @@ img {
   height: 70%;
   background:
     radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2), transparent 62%),
-    repeating-linear-gradient(
-      -18deg,
-      rgba(255, 255, 255, 0.05) 0 2px,
-      transparent 2px 18px
-    );
+    repeating-linear-gradient(-18deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 18px);
   transform: rotate(-8deg);
   pointer-events: none;
   animation: heroGrain 18s linear infinite;
@@ -489,7 +490,7 @@ img {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  align-items: end;
+  align-items: flex-end;
   justify-content: space-between;
 }
 
@@ -539,7 +540,12 @@ table.data th {
 .skeleton {
   height: 0.9rem;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(10, 107, 107, 0.08), rgba(10, 107, 107, 0.18), rgba(10, 107, 107, 0.08));
+  background: linear-gradient(
+    90deg,
+    rgba(10, 107, 107, 0.08),
+    rgba(10, 107, 107, 0.18),
+    rgba(10, 107, 107, 0.08)
+  );
   background-size: 200% 100%;
   animation: shimmer 1.2s linear infinite;
 }

@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test("technical landing page loads", async ({ page }) => {
+test("landing page loads", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "DentalCare AI" })).toBeVisible();
   await expect(page.getByText("Appointment notification delivery")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Enter workspace" })).toBeVisible();
 });
 
 test("health endpoint returns ok without business payload", async ({ request }) => {

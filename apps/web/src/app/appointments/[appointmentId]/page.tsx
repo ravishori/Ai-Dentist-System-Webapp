@@ -1,15 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ApiRequestError, apiFetch } from "../../../lib/api";
-import {
-  AuthGate,
-  ErrorState,
-  LoadingState,
-  PageHeader,
-} from "../../../components/ui-states";
+import { AuthGate, ErrorState, LoadingState, PageHeader } from "../../../components/ui-states";
 
 type Appointment = {
   id: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { ApiRequestError, apiFetch } from "../../lib/api";
 import {
   AuthGate,
@@ -130,7 +130,10 @@ function PractitionersWorkspace() {
       {error ? <ErrorState title="Practitioners request failed" body={error} /> : null}
       {!rows && !error ? <LoadingState label="Loading practitioners…" /> : null}
       {rows && rows.length === 0 ? (
-        <EmptyState title="No practitioners" body="Create a clinician profile linked to a user id." />
+        <EmptyState
+          title="No practitioners"
+          body="Create a clinician profile linked to a user id."
+        />
       ) : null}
       {rows && rows.length > 0 ? (
         <div className="panel table-wrap">

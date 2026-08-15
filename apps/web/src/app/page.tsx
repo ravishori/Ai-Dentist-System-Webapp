@@ -6,8 +6,10 @@ export default function LandingPage() {
       <section className="hero" aria-label="DentalCare AI">
         <div className="container hero-content">
           <p className="eyebrow">Dental practice operations · Milestone M7</p>
-          <p className="hero-brand">DentalCare AI</p>
-          <h1 className="hero-title">Clinic workflows for patients, appointments, and practitioners.</h1>
+          <h1 className="hero-brand">DentalCare AI</h1>
+          <p className="hero-title">
+            Clinic workflows for patients, appointments, and practitioners.
+          </p>
           <p className="hero-copy">
             A calm operations workspace built on the implemented M1–M7 APIs—advisory availability,
             lifecycle appointments, and organization-scoped records.

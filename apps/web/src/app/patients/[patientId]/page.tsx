@@ -2,14 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { ApiRequestError, apiFetch } from "../../../lib/api";
-import {
-  AuthGate,
-  ErrorState,
-  LoadingState,
-  PageHeader,
-} from "../../../components/ui-states";
+import { AuthGate, ErrorState, LoadingState, PageHeader } from "../../../components/ui-states";
 
 type Patient = {
   id: string;

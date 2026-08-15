@@ -1,15 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ApiRequestError, apiFetch } from "../../../lib/api";
-import {
-  AuthGate,
-  ErrorState,
-  LoadingState,
-  PageHeader,
-} from "../../../components/ui-states";
+import { AuthGate, ErrorState, LoadingState, PageHeader } from "../../../components/ui-states";
 
 type Practitioner = {
   id: string;
@@ -246,7 +241,9 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
       );
       setLastSchedule(body.schedule);
       setReplaceScheduleId(body.schedule.id);
-      setMessage(`Created schedule ${body.schedule.id}. There is no schedule list GET — keep this id.`);
+      setMessage(
+        `Created schedule ${body.schedule.id}. There is no schedule list GET — keep this id.`,
+      );
     });
   }
 
@@ -344,7 +341,9 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
         <Link className="btn btn-ghost" href="/practitioners">
           ← Practitioners
         </Link>
-        <span className={`badge ${practitioner.status === "active" ? "badge-ok" : "badge-neutral"}`}>
+        <span
+          className={`badge ${practitioner.status === "active" ? "badge-ok" : "badge-neutral"}`}
+        >
           {practitioner.status}
         </span>
       </div>
@@ -521,8 +520,8 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
         </form>
         {lastSchedule ? (
           <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
-            Last schedule <code>{lastSchedule.id}</code> · branch <code>{lastSchedule.branchId}</code>{" "}
-            · {lastSchedule.intervals.length} interval(s)
+            Last schedule <code>{lastSchedule.id}</code> · branch{" "}
+            <code>{lastSchedule.branchId}</code> · {lastSchedule.intervals.length} interval(s)
           </p>
         ) : null}
       </div>
@@ -660,9 +659,9 @@ function PractitionerDetail({ practitionerId }: { practitionerId: string }) {
         {availability ? (
           <div className="stack">
             <p style={{ margin: 0 }}>
-              <span className="badge badge-warn">advisory</span>{" "}
-              {availability.available.length} available range(s) · {availability.unavailable.length}{" "}
-              unavailable · {availability.conflicts.length} conflict(s)
+              <span className="badge badge-warn">advisory</span> {availability.available.length}{" "}
+              available range(s) · {availability.unavailable.length} unavailable ·{" "}
+              {availability.conflicts.length} conflict(s)
             </p>
             {availability.available.length > 0 ? (
               <div className="table-wrap">

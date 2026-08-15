@@ -52,7 +52,11 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined}
+                aria-current={
+                  pathname === link.href || pathname.startsWith(`${link.href}/`)
+                    ? "page"
+                    : undefined
+                }
               >
                 {link.label}
               </Link>
@@ -81,7 +85,9 @@ export function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined}
+              aria-current={
+                pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined
+              }
             >
               {link.label}
             </Link>

@@ -59,7 +59,8 @@ export default function StatusPage() {
                 </span>
               </div>
               <p style={{ margin: 0 }}>
-                Service <strong>{health.service}</strong> · milestone <strong>{health.milestone}</strong>
+                Service <strong>{health.service}</strong> · milestone{" "}
+                <strong>{health.milestone}</strong>
               </p>
               <p className="muted" style={{ margin: 0, fontSize: "0.9rem" }}>
                 Checked at {new Date(health.timestamp).toLocaleString()}
@@ -70,7 +71,11 @@ export default function StatusPage() {
               <div>
                 <span
                   className={`badge ${
-                    auth.authenticated ? "badge-ok" : auth.authConfigured === false ? "badge-warn" : "badge-neutral"
+                    auth.authenticated
+                      ? "badge-ok"
+                      : auth.authConfigured === false
+                        ? "badge-warn"
+                        : "badge-neutral"
                   }`}
                 >
                   {auth.authenticated
@@ -99,8 +104,8 @@ export default function StatusPage() {
                 <span className="badge badge-warn">processing disabled</span>
               </div>
               <p style={{ margin: 0 }}>
-                Staging keeps <code>NOTIFICATION_PROCESSING_ENABLED=false</code> and real SMTP delivery
-                off. Outbox rows may exist after appointment events, but no mail is sent.
+                Staging keeps <code>NOTIFICATION_PROCESSING_ENABLED=false</code> and real SMTP
+                delivery off. Outbox rows may exist after appointment events, but no mail is sent.
               </p>
             </div>
             <div className="panel stack">
@@ -128,7 +133,9 @@ function UnauthProbe() {
       } catch (error) {
         if (!cancelled) {
           if (error instanceof ApiRequestError) {
-            setResult(`Patients API correctly returned HTTP ${error.status} (${error.body.error ?? "error"}).`);
+            setResult(
+              `Patients API correctly returned HTTP ${error.status} (${error.body.error ?? "error"}).`,
+            );
           } else {
             setResult("Probe failed unexpectedly.");
           }

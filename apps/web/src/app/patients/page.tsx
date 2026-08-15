@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { ApiRequestError, apiFetch } from "../../lib/api";
 import {
   AuthGate,
@@ -148,7 +148,10 @@ function PatientsWorkspace() {
       {error ? <ErrorState title="Patients request failed" body={error} /> : null}
       {!patients && !error ? <LoadingState /> : null}
       {patients && patients.length === 0 ? (
-        <EmptyState title="No patients yet" body="Create the first patient for this organization." />
+        <EmptyState
+          title="No patients yet"
+          body="Create the first patient for this organization."
+        />
       ) : null}
       {patients && patients.length > 0 ? (
         <div className="panel table-wrap">
@@ -169,7 +172,9 @@ function PatientsWorkspace() {
                   </td>
                   <td>{patient.dateOfBirth}</td>
                   <td>
-                    <span className={`badge ${patient.status === "active" ? "badge-ok" : "badge-neutral"}`}>
+                    <span
+                      className={`badge ${patient.status === "active" ? "badge-ok" : "badge-neutral"}`}
+                    >
                       {patient.status}
                     </span>
                   </td>
