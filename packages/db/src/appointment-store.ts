@@ -16,30 +16,7 @@ import {
   type AppointmentWriteContext,
   type BranchLookup,
   type BranchRecord,
-  type Practitioner,
-  type PractitionerRepository,
 } from "@dentalcare/domain";
-
-export class PrismaPractitionerRepository implements PractitionerRepository {
-  constructor(private readonly prisma: PrismaClient) {}
-
-  async create(organizationId: string, userId: string): Promise<Practitioner> {
-    const record = await this.prisma.practitioner.create({
-      data: { organizationId, userId },
-    });
-    return toPractitioner(record);
-  }
-
-  async findByOrganizationAndId(
-    organizationId: string,
-    practitionerId: string,
-  ): Promise<Practitioner | null> {
-    const record = await this.prisma.practitioner.findFirst({
-      where: { id: practitionerId, organizationId },
-    });
-    return record ? toPractitioner(record) : null;
-  }
-}
 
 export class PrismaBranchLookup implements BranchLookup {
   constructor(private readonly prisma: PrismaClient) {}
@@ -323,22 +300,6 @@ function mapPersistenceError(error: unknown): unknown {
     return new AppointmentConflictError();
   }
   return error;
-}
-
-function toPractitioner(record: {
-  id: string;
-  organizationId: string;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}): Practitioner {
-  return {
-    id: record.id,
-    organizationId: record.organizationId,
-    userId: record.userId,
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
-  };
 }
 
 function toAppointment(record: {

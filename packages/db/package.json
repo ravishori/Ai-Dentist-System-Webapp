@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@dentalcare/application": "workspace:*",
+    "@dentalcare/domain": "workspace:*",
     "@prisma/client": "6.19.3"
   },
   "devDependencies": {
