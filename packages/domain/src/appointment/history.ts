@@ -1,4 +1,13 @@
-export const APPOINTMENT_HISTORY_EVENTS = ["created", "rescheduled", "cancelled"] as const;
+export const APPOINTMENT_HISTORY_EVENTS = [
+  "created",
+  "rescheduled",
+  "cancelled",
+  "confirmed",
+  "checked_in",
+  "started",
+  "completed",
+  "no_show",
+] as const;
 
 export type AppointmentHistoryEvent = (typeof APPOINTMENT_HISTORY_EVENTS)[number];
 

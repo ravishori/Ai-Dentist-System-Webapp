@@ -1,7 +1,12 @@
-import type { AppointmentListFilter, AuthenticatedIdentity } from "@dentalcare/domain";
+import type {
+  AppointmentLifecycleCommand,
+  AppointmentListFilter,
+  AuthenticatedIdentity,
+} from "@dentalcare/domain";
 import { AppointmentValidationError } from "@dentalcare/domain";
 import { toPublicAppointment, type AppointmentApplicationService } from "./service.js";
 import {
+  parseCommandBody,
   parseCreateInput,
   parseListFilter,
   parsePatchInput,
@@ -148,6 +153,100 @@ export async function handleAppointmentCancel(
   }
   const result = await service.cancel(input.identity, input.organizationId, input.appointmentId);
   return toHttpResult(result, (appointment) => ({ appointment: toPublicAppointment(appointment) }));
+}
+
+export async function handleAppointmentConfirm(
+  service: AppointmentApplicationService,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    appointmentId?: string;
+    body?: Record<string, unknown>;
+  },
+): Promise<AppointmentHttpResult> {
+  return handleLifecycleCommand(service, "confirm", input);
+}
+
+export async function handleAppointmentCheckIn(
+  service: AppointmentApplicationService,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    appointmentId?: string;
+    body?: Record<string, unknown>;
+  },
+): Promise<AppointmentHttpResult> {
+  return handleLifecycleCommand(service, "check_in", input);
+}
+
+export async function handleAppointmentStart(
+  service: AppointmentApplicationService,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    appointmentId?: string;
+    body?: Record<string, unknown>;
+  },
+): Promise<AppointmentHttpResult> {
+  return handleLifecycleCommand(service, "start", input);
+}
+
+export async function handleAppointmentComplete(
+  service: AppointmentApplicationService,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    appointmentId?: string;
+    body?: Record<string, unknown>;
+  },
+): Promise<AppointmentHttpResult> {
+  return handleLifecycleCommand(service, "complete", input);
+}
+
+export async function handleAppointmentNoShow(
+  service: AppointmentApplicationService,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    appointmentId?: string;
+    body?: Record<string, unknown>;
+  },
+): Promise<AppointmentHttpResult> {
+  return handleLifecycleCommand(service, "no_show", input);
+}
+
+async function handleLifecycleCommand(
+  service: AppointmentApplicationService,
+  command: AppointmentLifecycleCommand,
+  input: {
+    identity: AuthenticatedIdentity | null;
+    organizationId?: string;
+    appointmentId?: string;
+    body?: Record<string, unknown>;
+  },
+): Promise<AppointmentHttpResult> {
+  if (!input.identity) {
+    return unauthenticated();
+  }
+  try {
+    parseCommandBody(input.body ?? {});
+  } catch (error) {
+    return validationError(error);
+  }
+  const result = await service[commandMethod(command)](
+    input.identity,
+    input.organizationId,
+    input.appointmentId,
+  );
+  return toHttpResult(result, (appointment) => ({ appointment: toPublicAppointment(appointment) }));
+}
+
+function commandMethod(
+  command: AppointmentLifecycleCommand,
+): "confirm" | "checkIn" | "start" | "complete" | "noShow" {
+  if (command === "check_in") return "checkIn";
+  if (command === "no_show") return "noShow";
+  return command;
 }
 
 function toHttpResult<T>(

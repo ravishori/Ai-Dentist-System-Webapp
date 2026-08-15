@@ -2,6 +2,7 @@
 export const APPOINTMENT_APPLICATION = "appointment" as const;
 
 export { AppointmentApplicationService, toPublicAppointment } from "./service.js";
+export type { AppointmentHttpResult } from "./http.js";
 export {
   handleAppointmentCreate,
   handleAppointmentList,
@@ -9,6 +10,11 @@ export {
   handleAppointmentPatch,
   handleAppointmentReschedule,
   handleAppointmentCancel,
+  handleAppointmentConfirm,
+  handleAppointmentCheckIn,
+  handleAppointmentStart,
+  handleAppointmentComplete,
+  handleAppointmentNoShow,
 } from "./http.js";
 export {
   InMemoryAppointmentRepository,
@@ -20,4 +26,5 @@ export {
   parseRescheduleInput,
   parseListFilter,
   parsePatchInput,
+  parseCommandBody,
 } from "./validation.js";

@@ -99,7 +99,7 @@ Create rejects those fields. No patient portal.
 | `suppressed`      | Ineligible recipient; not retried        |
 | `failed_terminal` | Permanent or exhausted transient failure |
 
-Idempotency key: outbox `id`. Lease expiry allows recovery. Max attempts 5. Backoff after transient failures: 1m, 5m, 30m, 2h; fifth failure is terminal.
+Idempotency key: outbox `id`. Lease expiry allows recovery. Max attempts 5. `NOTIFICATION_RETRY_DELAYS_MS` is exactly four values (1m, 5m, 30m, 2h) matching M5-07; the fifth failure is terminal. There is no sixth delay.
 
 ---
 
