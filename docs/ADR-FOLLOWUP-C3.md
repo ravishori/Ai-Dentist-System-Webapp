@@ -101,3 +101,9 @@ Stop and ask if:
 - Reports: `docs/TDA-C3-PHASE5-RELEASE-REPORT.md`, `docs/TDA-C3-PHASE5-ENV-AUDIT.md`, `docs/TDA-C3-PHASE5-SECURITY-AUDIT.md`
 - In-process OTP E2E + security matrix: implemented
 - Staging DB / production SMS / Cognito cutover: **not claimed**
+
+## Phase 6 status (2026-08-15)
+
+- Attempted: real PostgreSQL + browser OTP staging validation
+- Result: **BLOCKED at Phase 6.1** — no connectable non-production Postgres (see `docs/TDA-C3-PHASE6-STAGING-VALIDATION.md`)
+- Classification remains: **DEVELOPMENT COMPLETE / STAGING VALIDATION PENDING / NOT PRODUCTION READY**
