@@ -5,15 +5,18 @@
 | **ADR ID**          | TDA-ADR-003                                                                                    |
 | **Title**           | Managed Identity Provider Selection                                                            |
 | **Version**         | 1.0                                                                                            |
-| **Status**          | PROPOSED — READY FOR HUMAN APPROVAL                                                            |
+| **Status**          | PROPOSED — READY FOR HUMAN APPROVAL — **partially superseded by TDA-ADR-004 (2026-08-15) for preferred human IdP** |
 | **Date**            | 14 August 2026                                                                                 |
 | **Repository**      | `ravishori/Ai-Dentist-System-webapp`                                                           |
 | **Change class**    | C3 (major architecture decision) per TDA-GOV-CMP-001                                           |
 | **Follows**         | TDA-ADR-001 v1.0; TDA-ADR-002 v1.0                                                             |
 | **Implements**      | TDA-SEC-001 ADR-SEC-001 (provider selection); TDA-IMP-M0-002 / TDA-IMP-M1-001 identity boundary |
 | **Does not do**     | Authentication implementation; SDK addition; Prisma/schema change; environment secrets         |
+| **Supersession**    | Historical text retained. Cognito-as-**preferred** human IdP (§5) is superseded by **TDA-ADR-004** (app-owned OTP preferred; Cognito retained for coexistence). Cognito adapter implementation and OIDC mapping rules remain valid for `AUTH_PROVIDER=managed`. |
 
 AI-generated documentation is non-authoritative until reviewed and approved (TDA-GOV-SOT-001 §16, TDA-GOV-CMP-001 §14). Cursor MUST NOT mark this ADR APPROVED.
+
+> **Supersession notice (TDA-ADR-004):** Preferred human authentication for C3+ is application-managed passwordless OTP. Amazon Cognito remains an optional managed adapter and must not be deleted in C3.
 
 Research date for vendor pages cited below: **14 August 2026**. Claims that could not be verified from official sources are marked **UNKNOWN**.
 
