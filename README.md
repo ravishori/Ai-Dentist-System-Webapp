@@ -2,7 +2,7 @@
 
 Implementation-ready TypeScript web application repository for the Dental Appointment Management System.
 
-This repository is a **modular monolith** with a separate notification worker. M0–M2 establish tooling, authentication, and organization-tenant authorization. M3 adds organization-scoped patient identity. M4 adds organization-scoped appointments. Notification delivery remains out of scope until a later milestone.
+This repository is a **modular monolith** with a separate notification worker. M0–M2 establish tooling, authentication, and organization-tenant authorization. M3 adds organization-scoped patient identity. M4 adds organization-scoped appointments. M5 delivers appointment outbox intents by email through a disabled-by-default worker. Real SMTP stays off until explicit production configuration is present.
 
 ## Technology baseline (TDA-IMP-M0-002 / TDA-ADR-001)
 
@@ -59,7 +59,7 @@ pnpm test:e2e
 
 ```
 apps/web/                 Next.js application shell
-apps/worker/              Notification worker shell (no processing in M0)
+apps/worker/              Notification worker (disabled by default; fake adapter in tests)
 packages/domain/          Domain boundaries: foundation, patient, appointment, notification
 packages/application/     Application-service placeholders per boundary
 packages/db/              Prisma schema, client, migrations
@@ -78,16 +78,16 @@ Controlled Word/PDF source documents remain at the repository root and must be p
 
 - Commit `.env.example` only. Never commit secrets.
 - Configuration fails fast on missing mandatory values and does not print secret values.
-- Authentication uses Amazon Cognito User Pools behind `AuthenticationPort` (TDA-ADR-003). Authorization uses application-owned membership/RBAC behind `AuthorizationPort` (TDA-ADR-002). Patient records and appointments are organization-scoped and authorized object-by-object. Notification delivery and other clinical workflows are not implemented.
-- Formal security hardening is M5.
+- Authentication uses Amazon Cognito User Pools behind `AuthenticationPort` (TDA-ADR-003). Authorization uses application-owned membership/RBAC behind `AuthorizationPort` (TDA-ADR-002). Patient records and appointments are organization-scoped and authorized object-by-object. Notification delivery uses `NotificationDeliveryPort` and is disabled by default.
+- Formal security hardening remains a later milestone.
 
 ## Milestones
 
-| ID    | Scope                                          |
-| ----- | ---------------------------------------------- |
-| M0    | Repository & tooling baseline                  |
-| M1    | Authentication foundation                      |
-| M2    | Authorization & organization/tenant foundation |
-| M3    | Patient domain foundation                      |
-| M4    | Appointment domain (this increment)            |
-| later | Notification delivery, hardening               |
+| ID  | Scope                                          |
+| --- | ---------------------------------------------- |
+| M0  | Repository & tooling baseline                  |
+| M1  | Authentication foundation                      |
+| M2  | Authorization & organization/tenant foundation |
+| M3  | Patient domain foundation                      |
+| M4  | Appointment domain                             |
+| M5  | Notification delivery (this increment)         |
