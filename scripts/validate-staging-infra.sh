@@ -16,6 +16,17 @@ require_file() {
   fi
 }
 
+# Prefer ripgrep when present; fall back to grep for CI runners without rg.
+search() {
+  local pattern="$1"
+  shift
+  if command -v rg >/dev/null 2>&1; then
+    rg -q -- "$pattern" "$@"
+  else
+    grep -Eq -- "$pattern" "$@"
+  fi
+}
+
 require_file "Dockerfile.web"
 require_file "Dockerfile.worker"
 require_file ".dockerignore"
@@ -24,26 +35,26 @@ require_file "docs/STAGING-HOSTING.md"
 require_file "docs/adr/ADR-IMP-005-staging-hosting-render.md"
 
 if [[ -f Dockerfile.web ]]; then
-  rg -q "node:22" Dockerfile.web || {
+  search "node:22" Dockerfile.web || {
     echo "FAIL: Dockerfile.web must use Node 22"
     fail=1
   }
-  rg -q "next start" Dockerfile.web || {
+  search "next start" Dockerfile.web || {
     echo "FAIL: Dockerfile.web must start with next start"
     fail=1
   }
-  rg -q "PORT" Dockerfile.web || {
+  search "PORT" Dockerfile.web || {
     echo "FAIL: Dockerfile.web must honor PORT"
     fail=1
   }
 fi
 
 if [[ -f Dockerfile.worker ]]; then
-  rg -q "node:22" Dockerfile.worker || {
+  search "node:22" Dockerfile.worker || {
     echo "FAIL: Dockerfile.worker must use Node 22"
     fail=1
   }
-  rg -q "@dentalcare/worker" Dockerfile.worker || {
+  search "@dentalcare/worker" Dockerfile.worker || {
     echo "FAIL: Dockerfile.worker must start the worker package"
     fail=1
   }
@@ -119,9 +130,21 @@ PY
   fi
 fi
 
-if rg -n "AKIA[0-9A-Z]{16}|-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----" \
-  Dockerfile.web Dockerfile.worker render.yaml docs/STAGING-HOSTING.md \
-  docs/adr/ADR-IMP-005-staging-hosting-render.md 2>/dev/null; then
+secret_hits=0
+if command -v rg >/dev/null 2>&1; then
+  if rg -n "AKIA[0-9A-Z]{16}|-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----" \
+    Dockerfile.web Dockerfile.worker render.yaml docs/STAGING-HOSTING.md \
+    docs/adr/ADR-IMP-005-staging-hosting-render.md 2>/dev/null; then
+    secret_hits=1
+  fi
+else
+  if grep -EIn "AKIA[0-9A-Z]{16}|-----BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----" \
+    Dockerfile.web Dockerfile.worker render.yaml docs/STAGING-HOSTING.md \
+    docs/adr/ADR-IMP-005-staging-hosting-render.md 2>/dev/null; then
+    secret_hits=1
+  fi
+fi
+if [[ "$secret_hits" -ne 0 ]]; then
   echo "FAIL: potential secret material in staging infra files"
   fail=1
 fi
