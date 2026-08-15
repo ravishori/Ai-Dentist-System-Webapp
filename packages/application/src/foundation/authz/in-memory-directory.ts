@@ -38,6 +38,10 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "appointment.complete",
       "appointment.no_show",
       "notification.read",
+      "practitioner.read.tenant",
+      "practitioner.schedule.manage",
+      "practitioner.leave.manage",
+      "practitioner.availability.read",
     ]);
     this.rolePermissions.set("PRACTITIONER", [
       "organization.read",
@@ -55,6 +59,8 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "appointment.complete",
       "appointment.no_show",
       "notification.read",
+      "practitioner.read.tenant",
+      "practitioner.availability.read",
     ]);
     this.rolePermissions.set("PRACTICE_ADMIN", [
       "organization.read",
@@ -76,6 +82,12 @@ export class InMemoryAuthorizationDirectory implements AuthorizationDirectory {
       "appointment.complete",
       "appointment.no_show",
       "notification.read",
+      "practitioner.read.tenant",
+      "practitioner.manage",
+      "practitioner.assignment.manage",
+      "practitioner.schedule.manage",
+      "practitioner.leave.manage",
+      "practitioner.availability.read",
     ]);
     this.rolePermissions.set("SYSTEM_ADMIN", [
       "organization.read",

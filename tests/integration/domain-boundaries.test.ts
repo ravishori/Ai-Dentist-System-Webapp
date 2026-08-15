@@ -5,6 +5,7 @@ import {
   FOUNDATION_BOUNDARY,
   NOTIFICATION_BOUNDARY,
   PATIENT_BOUNDARY,
+  PRACTITIONER_BOUNDARY,
 } from "@dentalcare/domain";
 
 describe("domain boundaries", () => {
@@ -14,6 +15,7 @@ describe("domain boundaries", () => {
       PATIENT_BOUNDARY,
       APPOINTMENT_BOUNDARY,
       NOTIFICATION_BOUNDARY,
+      PRACTITIONER_BOUNDARY,
     ]);
   });
 });

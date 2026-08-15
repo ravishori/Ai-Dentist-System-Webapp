@@ -2,6 +2,7 @@ export { FOUNDATION_APPLICATION } from "./foundation/index.js";
 export { PATIENT_APPLICATION } from "./patient/index.js";
 export { APPOINTMENT_APPLICATION } from "./appointment/index.js";
 export { NOTIFICATION_APPLICATION } from "./notification/index.js";
+export { PRACTITIONER_APPLICATION } from "./practitioner/index.js";
 export {
   CognitoOidcAuthenticationAdapter,
   UnsetAuthenticationPort,
@@ -95,3 +96,23 @@ export {
   toPublicNotification,
   handleNotificationGet,
 } from "./notification/index.js";
+export {
+  PractitionerApplicationService,
+  toPublicPractitioner,
+  handlePractitionerCreate,
+  handlePractitionerList,
+  handlePractitionerGet,
+  handlePractitionerUpdate,
+  handlePractitionerDeactivate,
+  handlePractitionerActivate,
+  handlePractitionerAssignBranch,
+  handlePractitionerUnassignBranch,
+  handlePractitionerCreateSchedule,
+  handlePractitionerReplaceSchedule,
+  handlePractitionerCreateUnavailability,
+  handlePractitionerCancelUnavailability,
+  handlePractitionerListSchedules,
+  handlePractitionerListUnavailability,
+  handlePractitionerAvailability,
+} from "./practitioner/index.js";
+export type { PractitionerHttpResult } from "./practitioner/index.js";

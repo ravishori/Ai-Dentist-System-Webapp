@@ -1,11 +1,5 @@
 /**
- * Minimum Practitioner Profile for Appointment (M4-01).
- * Linked to an Application User. Not a Cognito subject.
+ * Minimum Practitioner Profile for Appointment (M4-01), extended by M7-01 status/displayName.
+ * Canonical type lives in the practitioner domain.
  */
-export interface Practitioner {
-  readonly id: string;
-  readonly organizationId: string;
-  readonly userId: string;
-  readonly createdAt: string;
-  readonly updatedAt: string;
-}
+export type { Practitioner } from "../practitioner/practitioner.js";

@@ -8,6 +8,7 @@
 // M3: organization-scoped patient identity.
 // M4: organization-scoped appointments and minimum practitioner profiles.
 // M5: appointment-notification consent and outbox delivery metadata.
+// M7: practitioner status, branch assignment, weekly hours, and dated unavailability.
 
 generator client {
   provider = "prisma-client-js"
@@ -79,16 +80,20 @@ model AuthLoginTransaction {
 }
 
 model Organization {
-  id          String       @id @default(cuid())
-  name        String
-  status      String       @default("active")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  branches    Branch[]
+  id            String                         @id @default(cuid())
+  name          String
+  status        String                         @default("active")
+  createdAt     DateTime                       @default(now())
+  updatedAt     DateTime                       @updatedAt
+  branches      Branch[]
   memberships   Membership[]
   patients      Patient[]
   practitioners Practitioner[]
   appointments  Appointment[]
+  practitionerAssignments PractitionerBranchAssignment[]
+  practitionerSchedules   PractitionerSchedule[]
+  practitionerUnavailability PractitionerUnavailability[]
+  practitionerHistory     PractitionerHistory[]
 
   @@map("organizations")
 }
@@ -103,6 +108,8 @@ model Branch {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   memberships    Membership[]
   appointments   Appointment[]
+  practitionerAssignments PractitionerBranchAssignment[]
+  practitionerSchedules   PractitionerSchedule[]
 
   @@index([organizationId])
   @@map("branches")
@@ -221,14 +228,105 @@ model Practitioner {
   id             String       @id @default(cuid())
   organizationId String
   userId         String       @unique
+  displayName    String?
+  status         String       @default("active")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   user           User         @relation(fields: [userId], references: [id], onDelete: Restrict)
   appointments   Appointment[]
+  assignments    PractitionerBranchAssignment[]
+  schedules      PractitionerSchedule[]
+  unavailability PractitionerUnavailability[]
+  history        PractitionerHistory[]
 
   @@index([organizationId])
   @@map("practitioners")
+}
+
+model PractitionerBranchAssignment {
+  id             String       @id @default(cuid())
+  organizationId String
+  practitionerId String
+  branchId       String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  practitioner   Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Restrict)
+  branch         Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+
+  @@unique([practitionerId, branchId])
+  @@index([organizationId])
+  @@index([branchId])
+  @@map("practitioner_branch_assignments")
+}
+
+model PractitionerSchedule {
+  id             String       @id @default(cuid())
+  organizationId String
+  practitionerId String
+  branchId       String
+  timezone       String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  practitioner   Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Restrict)
+  branch         Branch       @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  intervals      PractitionerWeeklyInterval[]
+
+  @@unique([practitionerId, branchId])
+  @@index([organizationId])
+  @@map("practitioner_schedules")
+}
+
+model PractitionerWeeklyInterval {
+  id             String               @id @default(cuid())
+  scheduleId     String
+  organizationId String
+  practitionerId String
+  branchId       String
+  weekday        Int
+  startMinute    Int
+  endMinute      Int
+  createdAt      DateTime             @default(now())
+  schedule       PractitionerSchedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+
+  @@index([scheduleId])
+  @@index([practitionerId, branchId, weekday])
+  @@map("practitioner_weekly_intervals")
+}
+
+model PractitionerUnavailability {
+  id             String       @id @default(cuid())
+  organizationId String
+  practitionerId String
+  kind           String
+  status         String       @default("active")
+  startAtUtc     DateTime     @db.Timestamptz
+  endAtUtc       DateTime     @db.Timestamptz
+  timezone       String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  practitioner   Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, practitionerId, startAtUtc])
+  @@map("practitioner_unavailability")
+}
+
+model PractitionerHistory {
+  id             String       @id @default(cuid())
+  organizationId String
+  practitionerId String
+  eventType      String
+  actorUserId    String
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  practitioner   Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Restrict)
+
+  @@index([practitionerId, createdAt])
+  @@index([organizationId])
+  @@map("practitioner_history")
 }
 
 model Appointment {

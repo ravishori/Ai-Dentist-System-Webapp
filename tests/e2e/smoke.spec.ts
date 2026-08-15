@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test("technical landing page loads", async ({ page }) => {
+test("landing page loads", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "DentalCare AI" })).toBeVisible();
   await expect(page.getByText("Appointment notification delivery")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Enter workspace" })).toBeVisible();
 });
 
 test("health endpoint returns ok without business payload", async ({ request }) => {
@@ -17,7 +18,7 @@ test("health endpoint returns ok without business payload", async ({ request }) 
   expect(body).toMatchObject({
     status: "ok",
     service: "web",
-    milestone: "M6",
+    milestone: "M7",
   });
 });
 
@@ -52,6 +53,33 @@ test("appointment confirm API denies unauthenticated access", async ({ request }
   const response = await request.post("/api/appointments/appt_untrusted/confirm", {
     headers: { "x-organization-id": "org_untrusted" },
     data: {},
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
+});
+
+test("practitioner API denies unauthenticated access", async ({ request }) => {
+  const response = await request.get("/api/practitioners", {
+    headers: { "x-organization-id": "org_untrusted" },
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
+});
+
+test("practitioner schedule list API denies unauthenticated access", async ({ request }) => {
+  const response = await request.get("/api/practitioners/prac_untrusted/schedules", {
+    headers: { "x-organization-id": "org_untrusted" },
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
+});
+
+test("practitioner leave list API denies unauthenticated access", async ({ request }) => {
+  const response = await request.get("/api/practitioners/prac_untrusted/unavailability", {
+    headers: { "x-organization-id": "org_untrusted" },
   });
   expect(response.status()).toBe(401);
   const body = (await response.json()) as { error?: string };

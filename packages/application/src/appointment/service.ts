@@ -293,6 +293,17 @@ export class AppointmentApplicationService {
       if (patient.status !== "active") {
         return invalid();
       }
+      if (practitioner.status !== "active") {
+        return invalid();
+      }
+      const assigned = await this.practitioners.isAssignedToBranch(
+        organizationId,
+        input.practitionerId,
+        input.branchId,
+      );
+      if (!assigned) {
+        return invalid();
+      }
       return { ok: true };
     } catch {
       return unavailable();

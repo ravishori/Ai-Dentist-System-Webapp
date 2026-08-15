@@ -15,48 +15,9 @@ import {
   type AppointmentWriteContext,
   type BranchLookup,
   type BranchRecord,
-  type Practitioner,
-  type PractitionerRepository,
 } from "@dentalcare/domain";
 
-export class InMemoryPractitionerRepository implements PractitionerRepository {
-  readonly records = new Map<string, Practitioner>();
-  failLookups = false;
-  private sequence = 0;
-
-  async create(organizationId: string, userId: string): Promise<Practitioner> {
-    this.assertAvailable();
-    this.sequence += 1;
-    const now = new Date().toISOString();
-    const practitioner: Practitioner = {
-      id: `practitioner_${this.sequence}`,
-      organizationId,
-      userId,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.records.set(practitioner.id, practitioner);
-    return practitioner;
-  }
-
-  async findByOrganizationAndId(
-    organizationId: string,
-    practitionerId: string,
-  ): Promise<Practitioner | null> {
-    this.assertAvailable();
-    const practitioner = this.records.get(practitionerId);
-    if (!practitioner || practitioner.organizationId !== organizationId) {
-      return null;
-    }
-    return practitioner;
-  }
-
-  private assertAvailable(): void {
-    if (this.failLookups) {
-      throw new Error("practitioner_repository_unavailable");
-    }
-  }
-}
+export { InMemoryPractitionerRepository } from "../practitioner/in-memory-repository.js";
 
 export class InMemoryBranchLookup implements BranchLookup {
   readonly records = new Map<string, BranchRecord>();

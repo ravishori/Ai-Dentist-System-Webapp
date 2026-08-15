@@ -167,6 +167,8 @@ async function seedOrg(h: ReturnType<typeof harness>, organizationId: string) {
   );
   const branchId = `branch_${organizationId}`;
   h.branches.add(organizationId, branchId);
+  h.practitioners.assignToBranch(practitioner.id, branchId);
+  h.practitioners.assignToBranch(otherPractitioner.id, branchId);
   return { ada, alan, practitioner, otherPractitioner, branchId };
 }
 

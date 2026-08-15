@@ -36,6 +36,10 @@ pnpm dev          # web shell — http://localhost:3000
 pnpm dev:worker   # worker shell
 ```
 
+## Staging hosting (proposed)
+
+Staging container/Render configuration is documented in `docs/STAGING-HOSTING.md` and proposed in `docs/adr/ADR-IMP-005-staging-hosting-render.md`. It is **not** production deployment and does **not** configure `dental.trinetralab.net`.
+
 ## Validation commands
 
 ```bash

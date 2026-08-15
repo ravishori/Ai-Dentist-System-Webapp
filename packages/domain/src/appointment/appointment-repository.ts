@@ -43,6 +43,11 @@ export interface PractitionerRepository {
     organizationId: string,
     practitionerId: string,
   ): Promise<Practitioner | null>;
+  isAssignedToBranch(
+    organizationId: string,
+    practitionerId: string,
+    branchId: string,
+  ): Promise<boolean>;
 }
 
 export interface BranchLookup {

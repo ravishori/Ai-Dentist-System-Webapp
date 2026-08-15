@@ -8,11 +8,8 @@ export {
 } from "./auth-stores.js";
 export { PrismaAuthorizationDirectory } from "./authz-stores.js";
 export { PrismaPatientRepository } from "./patient-store.js";
-export {
-  PrismaAppointmentRepository,
-  PrismaPractitionerRepository,
-  PrismaBranchLookup,
-} from "./appointment-store.js";
+export { PrismaAppointmentRepository, PrismaBranchLookup } from "./appointment-store.js";
+export { PrismaPractitionerRepository } from "./practitioner-store.js";
 export { PrismaNotificationOutboxRepository } from "./notification-store.js";
 
 export function createPrismaClient(): PrismaClient {

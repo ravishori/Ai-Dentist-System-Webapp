@@ -18,8 +18,8 @@ export {
 } from "./http.js";
 export {
   InMemoryAppointmentRepository,
-  InMemoryPractitionerRepository,
   InMemoryBranchLookup,
+  InMemoryPractitionerRepository,
 } from "./in-memory-repository.js";
 export {
   parseCreateInput,

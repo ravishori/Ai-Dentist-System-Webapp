@@ -164,6 +164,7 @@ async function seedEligible(h: ReturnType<typeof harness>, organizationId = ORG_
   const practitioner = await h.practitioners.create(organizationId, `pract_${organizationId}`);
   const branchId = `branch_${organizationId}`;
   h.branches.add(organizationId, branchId);
+  h.practitioners.assignToBranch(practitioner.id, branchId);
   const created = await h.appointmentService.create(identity(STAFF_A), organizationId, {
     patientId: patient.id,
     practitionerId: practitioner.id,
@@ -344,6 +345,7 @@ describe("outbox processing", () => {
       const patient = await h.patients.create(ORG_A, ADA);
       const practitioner = await h.practitioners.create(ORG_A, "pract_a");
       h.branches.add(ORG_A, "branch_a");
+      h.practitioners.assignToBranch(practitioner.id, "branch_a");
       const created = await h.appointmentService.create(identity(STAFF_A), ORG_A, {
         patientId: patient.id,
         practitionerId: practitioner.id,
