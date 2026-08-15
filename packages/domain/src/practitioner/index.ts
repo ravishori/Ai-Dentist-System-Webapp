@@ -1,0 +1,73 @@
+/** Practitioner management and advisory availability (M7). */
+export const PRACTITIONER_BOUNDARY = "practitioner" as const;
+
+export {
+  PRACTITIONER_STATUSES,
+  UNAVAILABILITY_KINDS,
+  UNAVAILABILITY_STATUSES,
+  WEEKDAYS,
+  AVAILABILITY_UNAVAILABLE_REASONS,
+  OPERATIONAL_CONFLICT_REASONS,
+  isPractitionerStatus,
+  isUnavailabilityKind,
+  isUnavailabilityStatus,
+  isWeekday,
+  PractitionerValidationError,
+  PractitionerConflictError,
+  PractitionerNotFoundError,
+  type Practitioner,
+  type PractitionerStatus,
+  type PractitionerCreateInput,
+  type PractitionerUpdateInput,
+  type PractitionerBranchAssignment,
+  type UnavailabilityKind,
+  type UnavailabilityStatus,
+  type Weekday,
+  type WeeklyWorkingInterval,
+  type PractitionerSchedule,
+  type PractitionerUnavailability,
+  type PractitionerCreateScheduleInput,
+  type WeeklyIntervalInput,
+  type PractitionerReplaceScheduleInput,
+  type PractitionerUnavailabilityCreateInput,
+  type PractitionerAvailabilityQuery,
+  type AvailabilityUnavailableReason,
+  type OperationalConflictReason,
+  type AvailableRange,
+  type UnavailableRange,
+  type OperationalConflict,
+  type PractitionerAvailabilityResult,
+} from "./practitioner.js";
+export {
+  PRACTITIONER_HISTORY_EVENTS,
+  PRACTITIONER_AUDIT_ACTIONS,
+  type PractitionerHistoryEvent,
+  type PractitionerHistoryRecord,
+  type PractitionerAuditAction,
+} from "./history.js";
+export {
+  assertIanaTimeZone,
+  isValidIanaTimeZone,
+  zonedParts,
+  zonedLocalToUtc,
+  timeZoneOffsetMs,
+  addCalendarDays,
+  compareCivilDate,
+} from "./timezone.js";
+export {
+  evaluateAvailability,
+  operationalConflicts,
+  intervalsOverlap,
+  subtractIntervals,
+  mergeIntervals,
+  weeklyIntervalsOverlap,
+  type UtcInterval,
+  type AvailabilityAppointment,
+  type EvaluateAvailabilityInput,
+} from "./availability.js";
+export type {
+  PractitionerWriteContext,
+  PractitionerRepository,
+  PractitionerManagementRepository,
+  PractitionerAppointmentLookup,
+} from "./repository.js";

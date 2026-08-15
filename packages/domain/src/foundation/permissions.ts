@@ -43,11 +43,24 @@ export const NOTIFICATION_PERMISSIONS = ["notification.read"] as const;
 
 export type NotificationPermission = (typeof NOTIFICATION_PERMISSIONS)[number];
 
+/** Tenant-scoped practitioner profile, assignment, schedule, and advisory availability (M7-08). */
+export const PRACTITIONER_PERMISSIONS = [
+  "practitioner.read.tenant",
+  "practitioner.manage",
+  "practitioner.assignment.manage",
+  "practitioner.schedule.manage",
+  "practitioner.leave.manage",
+  "practitioner.availability.read",
+] as const;
+
+export type PractitionerPermission = (typeof PRACTITIONER_PERMISSIONS)[number];
+
 export const APPLICATION_PERMISSIONS = [
   ...FOUNDATION_PERMISSIONS,
   ...PATIENT_PERMISSIONS,
   ...APPOINTMENT_PERMISSIONS,
   ...NOTIFICATION_PERMISSIONS,
+  ...PRACTITIONER_PERMISSIONS,
 ] as const;
 
 export type ApplicationPermission = (typeof APPLICATION_PERMISSIONS)[number];
@@ -70,6 +83,10 @@ export function isAppointmentPermission(value: string): value is AppointmentPerm
 
 export function isNotificationPermission(value: string): value is NotificationPermission {
   return (NOTIFICATION_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isPractitionerPermission(value: string): value is PractitionerPermission {
+  return (PRACTITIONER_PERMISSIONS as readonly string[]).includes(value);
 }
 
 export function isApplicationPermission(value: string): value is ApplicationPermission {
