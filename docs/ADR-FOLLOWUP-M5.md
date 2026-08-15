@@ -51,7 +51,7 @@ M1–M4 architecture is not to be redesigned by M5.
 | M5-04 | Recipient / consent | Valid patient email only; explicit consent and opt-out required before real delivery; skip inactive/missing/invalid/opt-out. |
 | M5-05 | Message content     | First name + appointment logistics only. No clinical or extra PII.                                                           |
 | M5-06 | Events              | Created, rescheduled, cancelled only.                                                                                        |
-| M5-07 | Retry               | Max 5 attempts; delays 1m / 5m / 30m / 2h / 6h; permanent errors terminate.                                                  |
+| M5-07 | Retry               | 5 total attempts; delays after 1–4: 1m / 5m / 30m / 2h; attempt 5 is terminal.                                               |
 | M5-08 | Idempotency         | Atomic claim; stable key; no duplicate send after success or restart.                                                        |
 | M5-09 | Worker              | Polling worker, 60s interval, **disabled by default**.                                                                       |
 | M5-10 | Observability       | Minimal metadata; no secrets, bodies, or full recipient emails in logs/audit.                                                |
@@ -148,11 +148,17 @@ Existing outbox event type strings remain:
 ## Decision
 
 ```text
-Use bounded exponential-backoff retries for transient provider failures:
-- maximum attempts: 5;
-- delays: 1 minute, 5 minutes, 30 minutes, 2 hours, and 6 hours;
-- non-retryable validation, consent, opt-out, recipient, or provider permanent errors terminate immediately;
-- a terminal failure is recorded for operational follow-up and never retried automatically.
+Maximum delivery attempts: 5 total attempts.
+
+For transient failures after attempts 1–4, retry after:
+- 1 minute;
+- 5 minutes;
+- 30 minutes;
+- 2 hours.
+
+Attempt 5 is terminal. No sixth automatic attempt is made.
+
+Non-retryable validation, consent, opt-out, recipient, or permanent provider errors terminate immediately.
 ```
 
 A provider timeout or outage must **not** change appointment lifecycle state.
