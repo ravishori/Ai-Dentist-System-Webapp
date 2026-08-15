@@ -111,12 +111,12 @@ assigned branch + active practitioner
 
 Outputs:
 
-| Field         | Meaning                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------ |
-| `available`   | Remaining UTC ranges whose length is at least `durationMinutes`                                  |
+| Field         | Meaning                                                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `available`   | Remaining UTC ranges whose length is at least `durationMinutes`                                                              |
 | `unavailable` | Window coverage with `outside_hours`, `unavailability`, `appointment`, `practitioner_inactive`, or `practitioner_unassigned` |
-| `conflicts`   | Existing active appointments that are operationally inconsistent (see §7)                        |
-| `advisory`    | Always `true`                                                                                    |
+| `conflicts`   | Existing active appointments that are operationally inconsistent (see §7)                                                    |
+| `advisory`    | Always `true`                                                                                                                |
 
 Two overlapping “available” reads can both proceed; M4 exclusions serialize writes.
 
@@ -128,11 +128,11 @@ New create/reschedule onto an inactive or unassigned practitioner returns `400 i
 
 Conflict reasons (staff-facing flags only):
 
-| Reason                       | When                                                                 |
-| ---------------------------- | -------------------------------------------------------------------- |
-| `practitioner_inactive`      | Practitioner is inactive and an active appointment still exists      |
-| `practitioner_unassigned`    | Practitioner is not assigned to the appointment’s branch             |
-| `leave_covers_appointment`   | Active unavailability overlaps an active appointment                 |
+| Reason                     | When                                                            |
+| -------------------------- | --------------------------------------------------------------- |
+| `practitioner_inactive`    | Practitioner is inactive and an active appointment still exists |
+| `practitioner_unassigned`  | Practitioner is not assigned to the appointment’s branch        |
+| `leave_covers_appointment` | Active unavailability overlaps an active appointment            |
 
 Returned on deactivate, unassign, unavailability create, and availability GET. No new outbox event.
 
@@ -140,21 +140,21 @@ Returned on deactivate, unassign, unavailability create, and availability GET. N
 
 ## 8. Routes and permissions (M7-08 / M7-09)
 
-| Method | Path                                                      | Permission                       |
-| ------ | --------------------------------------------------------- | -------------------------------- |
-| `POST` | `/api/practitioners`                                      | `practitioner.manage`            |
-| `GET`  | `/api/practitioners`                                      | `practitioner.read.tenant`       |
-| `GET`  | `/api/practitioners/:id`                                  | `practitioner.read.tenant`       |
-| `POST` | `/api/practitioners/:id/update`                           | `practitioner.manage`            |
-| `POST` | `/api/practitioners/:id/deactivate`                       | `practitioner.manage`            |
-| `POST` | `/api/practitioners/:id/activate`                         | `practitioner.manage`            |
-| `POST` | `/api/practitioners/:id/branches`                         | `practitioner.assignment.manage` |
-| `POST` | `/api/practitioners/:id/branches/:branchId/unassign`      | `practitioner.assignment.manage` |
-| `POST` | `/api/practitioners/:id/schedules`                        | `practitioner.schedule.manage`   |
-| `POST` | `/api/practitioners/:id/schedules/:scheduleId/replace`    | `practitioner.schedule.manage`   |
-| `POST` | `/api/practitioners/:id/unavailability`                   | `practitioner.leave.manage`      |
-| `POST` | `/api/practitioners/:id/unavailability/:intervalId/cancel`| `practitioner.leave.manage`      |
-| `GET`  | `/api/practitioners/:id/availability`                     | `practitioner.availability.read` |
+| Method | Path                                                       | Permission                       |
+| ------ | ---------------------------------------------------------- | -------------------------------- |
+| `POST` | `/api/practitioners`                                       | `practitioner.manage`            |
+| `GET`  | `/api/practitioners`                                       | `practitioner.read.tenant`       |
+| `GET`  | `/api/practitioners/:id`                                   | `practitioner.read.tenant`       |
+| `POST` | `/api/practitioners/:id/update`                            | `practitioner.manage`            |
+| `POST` | `/api/practitioners/:id/deactivate`                        | `practitioner.manage`            |
+| `POST` | `/api/practitioners/:id/activate`                          | `practitioner.manage`            |
+| `POST` | `/api/practitioners/:id/branches`                          | `practitioner.assignment.manage` |
+| `POST` | `/api/practitioners/:id/branches/:branchId/unassign`       | `practitioner.assignment.manage` |
+| `POST` | `/api/practitioners/:id/schedules`                         | `practitioner.schedule.manage`   |
+| `POST` | `/api/practitioners/:id/schedules/:scheduleId/replace`     | `practitioner.schedule.manage`   |
+| `POST` | `/api/practitioners/:id/unavailability`                    | `practitioner.leave.manage`      |
+| `POST` | `/api/practitioners/:id/unavailability/:intervalId/cancel` | `practitioner.leave.manage`      |
+| `GET`  | `/api/practitioners/:id/availability`                      | `practitioner.availability.read` |
 
 There is no `DELETE /api/practitioners/:id` and no patient-facing booking endpoint.
 

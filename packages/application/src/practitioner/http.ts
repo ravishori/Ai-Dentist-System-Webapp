@@ -1,12 +1,12 @@
 import type { AuthenticatedIdentity } from "@dentalcare/domain";
 import { PractitionerValidationError } from "@dentalcare/domain";
 import {
-  PractitionerApplicationService,
   toPublicAssignment,
   toPublicAvailability,
   toPublicPractitioner,
   toPublicSchedule,
   toPublicUnavailability,
+  type PractitionerApplicationService,
 } from "./service.js";
 import {
   parseAssignInput,

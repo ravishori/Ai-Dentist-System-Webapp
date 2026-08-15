@@ -45,7 +45,9 @@ export type PractitionerServiceSuccess<T> = {
   readonly data: T;
 };
 
-export type PractitionerServiceResult<T> = PractitionerServiceSuccess<T> | PractitionerServiceFailure;
+export type PractitionerServiceResult<T> =
+  | PractitionerServiceSuccess<T>
+  | PractitionerServiceFailure;
 
 export type PractitionerProfileView = {
   readonly practitioner: Practitioner;
@@ -106,7 +108,10 @@ export class PractitionerApplicationService {
       const views = await Promise.all(
         practitioners.map(async (practitioner) => ({
           practitioner,
-          assignments: await this.practitioners.listAssignments(gate.organizationId, practitioner.id),
+          assignments: await this.practitioners.listAssignments(
+            gate.organizationId,
+            practitioner.id,
+          ),
         })),
       );
       return { ok: true, status: 200, data: views };
@@ -245,7 +250,10 @@ export class PractitionerApplicationService {
         assignedBranchId,
       );
       const conflicts = await this.conflictsFor(existing);
-      const assignments = await this.practitioners.listAssignments(gate.organizationId, existing.id);
+      const assignments = await this.practitioners.listAssignments(
+        gate.organizationId,
+        existing.id,
+      );
       return { ok: true, status: 200, data: { practitioner: existing, assignments, conflicts } };
     } catch (error) {
       return mapWriteError(error);
@@ -276,7 +284,10 @@ export class PractitionerApplicationService {
         id,
         input.branchId,
       );
-      const branch = await this.branches.findByOrganizationAndId(gate.organizationId, input.branchId);
+      const branch = await this.branches.findByOrganizationAndId(
+        gate.organizationId,
+        input.branchId,
+      );
       if (!branch || !assigned) {
         return invalid();
       }
@@ -406,11 +417,17 @@ export class PractitionerApplicationService {
       return invalid();
     }
     try {
-      const practitioner = await this.practitioners.findByOrganizationAndId(gate.organizationId, id);
+      const practitioner = await this.practitioners.findByOrganizationAndId(
+        gate.organizationId,
+        id,
+      );
       if (!practitioner) {
         return notFound();
       }
-      const branch = await this.branches.findByOrganizationAndId(gate.organizationId, query.branchId);
+      const branch = await this.branches.findByOrganizationAndId(
+        gate.organizationId,
+        query.branchId,
+      );
       if (!branch) {
         return invalid();
       }
@@ -639,7 +656,9 @@ export function toPublicPractitioner(practitioner: Practitioner): Record<string,
   };
 }
 
-export function toPublicAssignment(assignment: PractitionerBranchAssignment): Record<string, unknown> {
+export function toPublicAssignment(
+  assignment: PractitionerBranchAssignment,
+): Record<string, unknown> {
   return {
     id: assignment.id,
     branchId: assignment.branchId,
@@ -679,7 +698,9 @@ export function toPublicUnavailability(
   };
 }
 
-export function toPublicAvailability(result: PractitionerAvailabilityResult): Record<string, unknown> {
+export function toPublicAvailability(
+  result: PractitionerAvailabilityResult,
+): Record<string, unknown> {
   return {
     practitionerId: result.practitionerId,
     branchId: result.branchId,

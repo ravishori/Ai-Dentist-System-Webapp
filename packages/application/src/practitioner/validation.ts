@@ -138,7 +138,9 @@ function parseLocalTime(value: unknown, field: string, allowMidnightEnd = false)
   if (typeof value !== "string") {
     throw new PractitionerValidationError(field);
   }
-  const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value) ?? (allowMidnightEnd && value === "24:00" ? ["24:00", "24", "00"] : null);
+  const match =
+    /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value) ??
+    (allowMidnightEnd && value === "24:00" ? ["24:00", "24", "00"] : null);
   if (!match) {
     throw new PractitionerValidationError(field);
   }

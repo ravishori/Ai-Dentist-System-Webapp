@@ -1,11 +1,6 @@
-import { isActiveSchedulingStatus, type Appointment } from "../appointment/appointment.js";
-import type { AppointmentStatus } from "../appointment/lifecycle.js";
-import {
-  addCalendarDays,
-  compareCivilDate,
-  zonedLocalToUtc,
-  zonedParts,
-} from "./timezone.js";
+import { type Appointment } from "../appointment/appointment.js";
+import { isActiveSchedulingStatus, type AppointmentStatus } from "../appointment/lifecycle.js";
+import { addCalendarDays, compareCivilDate, zonedLocalToUtc, zonedParts } from "./timezone.js";
 import type {
   AvailabilityUnavailableReason,
   OperationalConflict,
@@ -44,7 +39,10 @@ export function intervalsOverlap(left: UtcInterval, right: UtcInterval): boolean
   return left.startMs < right.endMs && right.startMs < left.endMs;
 }
 
-export function subtractIntervals(base: UtcInterval, blocks: readonly UtcInterval[]): UtcInterval[] {
+export function subtractIntervals(
+  base: UtcInterval,
+  blocks: readonly UtcInterval[],
+): UtcInterval[] {
   let remaining: UtcInterval[] = [base];
   for (const block of blocks) {
     const next: UtcInterval[] = [];
@@ -103,7 +101,9 @@ function activeUnavailability(records: readonly PractitionerUnavailability[]): U
     }));
 }
 
-function activeAppointments(records: readonly AvailabilityAppointment[]): AvailabilityAppointment[] {
+function activeAppointments(
+  records: readonly AvailabilityAppointment[],
+): AvailabilityAppointment[] {
   return records.filter((record) => isActiveSchedulingStatus(record.status));
 }
 
@@ -154,10 +154,7 @@ export function operationalConflicts(input: {
   return conflicts;
 }
 
-function expandWeeklyHours(
-  schedule: PractitionerSchedule,
-  window: UtcInterval,
-): UtcInterval[] {
+function expandWeeklyHours(schedule: PractitionerSchedule, window: UtcInterval): UtcInterval[] {
   const startParts = zonedParts(new Date(window.startMs), schedule.timezone);
   const endParts = zonedParts(new Date(window.endMs - 1), schedule.timezone);
   const expanded: UtcInterval[] = [];
@@ -250,7 +247,9 @@ function classifyHole(
   return "outside_hours";
 }
 
-export function evaluateAvailability(input: EvaluateAvailabilityInput): PractitionerAvailabilityResult {
+export function evaluateAvailability(
+  input: EvaluateAvailabilityInput,
+): PractitionerAvailabilityResult {
   const window: UtcInterval = {
     startMs: new Date(input.query.startAtUtc).getTime(),
     endMs: new Date(input.query.endAtUtc).getTime(),

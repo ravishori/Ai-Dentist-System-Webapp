@@ -17,6 +17,8 @@ import {
   type BranchRecord,
 } from "@dentalcare/domain";
 
+export { InMemoryPractitionerRepository } from "../practitioner/in-memory-repository.js";
+
 export class InMemoryBranchLookup implements BranchLookup {
   readonly records = new Map<string, BranchRecord>();
   failLookups = false;

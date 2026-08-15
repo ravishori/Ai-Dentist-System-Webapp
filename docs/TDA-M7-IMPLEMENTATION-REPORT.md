@@ -122,7 +122,17 @@ Appointment and notification tests were updated so seeded practitioners are assi
 
 ## 9. Validation
 
-Recorded after the validation suite in this implementation pass.
+| Gate           | Command                 | Result                                              |
+| -------------- | ----------------------- | --------------------------------------------------- |
+| Tests          | `pnpm test`             | PASS (189 tests)                                    |
+| Lint           | `pnpm lint`             | PASS                                                |
+| Format         | `pnpm format:check`     | PASS                                                |
+| Typecheck      | `pnpm typecheck`        | PASS                                                |
+| DB validation  | `pnpm db:validate`      | PASS                                                |
+| Build          | `pnpm build`            | PASS (practitioner command and availability routes) |
+| Security audit | `pnpm security:audit`   | PASS                                                |
+| Secrets        | `pnpm security:secrets` | PASS                                                |
+| E2E            | `CI=true pnpm test:e2e` | PASS (8 tests)                                      |
 
 ---
 

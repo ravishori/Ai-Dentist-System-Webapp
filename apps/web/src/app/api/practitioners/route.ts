@@ -1,7 +1,11 @@
 import { handlePractitionerCreate, handlePractitionerList } from "@dentalcare/application";
 import { requestedOrganizationId } from "../../../infrastructure/http/organization";
 import { getPractitionerService } from "../../../infrastructure/practitioner/service";
-import { identityFrom, jsonResponse, postPractitionerCommand } from "../../../infrastructure/practitioner/http";
+import {
+  identityFrom,
+  jsonResponse,
+  postPractitionerCommand,
+} from "../../../infrastructure/practitioner/http";
 
 export const dynamic = "force-dynamic";
 

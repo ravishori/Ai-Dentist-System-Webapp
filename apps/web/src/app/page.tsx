@@ -11,8 +11,8 @@ export default function StatusPage() {
         organization membership and RBAC. Organization-scoped patient identity, appointments, and
         practitioner management are implemented. Appointment operations follow the approved M6
         lifecycle. Practitioner availability is internal and advisory only. Appointment notification
-        delivery remains a disabled-by-default worker with a fake adapter in tests. Real SMTP remains
-        off until explicit production configuration is present.
+        delivery remains a disabled-by-default worker with a fake adapter in tests. Real SMTP
+        remains off until explicit production configuration is present.
       </p>
       <p>
         Process health: <code>/api/health</code>

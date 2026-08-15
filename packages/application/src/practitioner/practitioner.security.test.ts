@@ -7,7 +7,10 @@ import { RbacAuthorizationAdapter } from "../foundation/authz/rbac-adapter.js";
 import { InMemoryAuthorizationDirectory } from "../foundation/authz/in-memory-directory.js";
 import { InMemoryPatientRepository } from "../patient/in-memory-repository.js";
 import { AppointmentApplicationService } from "../appointment/service.js";
-import { InMemoryAppointmentRepository, InMemoryBranchLookup } from "../appointment/in-memory-repository.js";
+import {
+  InMemoryAppointmentRepository,
+  InMemoryBranchLookup,
+} from "../appointment/in-memory-repository.js";
 import { PractitionerApplicationService } from "./service.js";
 import { InMemoryPractitionerRepository } from "./in-memory-repository.js";
 import {
@@ -81,7 +84,12 @@ function expectNoLeak(value: unknown): void {
 
 function harness() {
   const directory = new InMemoryAuthorizationDirectory();
-  directory.addUser(STAFF_A).addUser(STAFF_B).addUser(PRACTITIONER_A).addUser(ADMIN_A).addUser(ADMIN_B);
+  directory
+    .addUser(STAFF_A)
+    .addUser(STAFF_B)
+    .addUser(PRACTITIONER_A)
+    .addUser(ADMIN_A)
+    .addUser(ADMIN_B);
   directory.addUser(LINK_A).addUser(LINK_B);
   directory.addUser(DISABLED, "disabled").addUser(NO_MEMBER).addUser(REVOKED);
   directory.addUser(PATIENT_ROLE).addUser(PLATFORM_ADMIN);
@@ -276,9 +284,7 @@ describe("practitioner lifecycle and assignment", () => {
       body: { branchId: "branch_a" },
     });
     expect(assigned.status).toBe(200);
-    expect(assigned.body.assignments).toEqual([
-      expect.objectContaining({ branchId: "branch_a" }),
-    ]);
+    expect(assigned.body.assignments).toEqual([expect.objectContaining({ branchId: "branch_a" })]);
     const cross = await handlePractitionerAssignBranch(h.service, {
       identity: identity(ADMIN_A),
       organizationId: ORG_A,

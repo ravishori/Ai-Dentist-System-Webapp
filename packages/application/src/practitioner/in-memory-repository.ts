@@ -155,7 +155,13 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
     context: PractitionerWriteContext,
     practitionerId: string,
   ): Promise<Practitioner> {
-    return this.setStatus(context, practitionerId, "inactive", "deactivated", "practitioner.deactivate");
+    return this.setStatus(
+      context,
+      practitionerId,
+      "inactive",
+      "deactivated",
+      "practitioner.deactivate",
+    );
   }
 
   async activateByOrganizationAndId(
@@ -226,7 +232,8 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
     this.assertAvailable();
     return [...this.assignments.values()].filter(
       (assignment) =>
-        assignment.organizationId === organizationId && assignment.practitionerId === practitionerId,
+        assignment.organizationId === organizationId &&
+        assignment.practitionerId === practitionerId,
     );
   }
 
@@ -418,7 +425,8 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
   ): Promise<readonly PractitionerUnavailability[]> {
     this.assertAvailable();
     return [...this.unavailability.values()].filter(
-      (record) => record.organizationId === organizationId && record.practitionerId === practitionerId,
+      (record) =>
+        record.organizationId === organizationId && record.practitionerId === practitionerId,
     );
   }
 
@@ -427,7 +435,8 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
     practitionerId: string,
   ): Promise<readonly { eventType: PractitionerHistoryEvent; actorUserId: string }[]> {
     return this.history.filter(
-      (record) => record.organizationId === organizationId && record.practitionerId === practitionerId,
+      (record) =>
+        record.organizationId === organizationId && record.practitionerId === practitionerId,
     );
   }
 
@@ -503,9 +512,7 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
     });
   }
 
-  private assertWeeklyNonOverlap(
-    intervals: PractitionerCreateScheduleInput["intervals"],
-  ): void {
+  private assertWeeklyNonOverlap(intervals: PractitionerCreateScheduleInput["intervals"]): void {
     for (let i = 0; i < intervals.length; i += 1) {
       for (let j = i + 1; j < intervals.length; j += 1) {
         if (weeklyIntervalsOverlap(intervals[i]!, intervals[j]!)) {
