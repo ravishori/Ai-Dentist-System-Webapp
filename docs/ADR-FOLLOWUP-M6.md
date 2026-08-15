@@ -4,22 +4,18 @@
 
 **Document ID:** TDA-ADR-FOLLOWUP-M6  
 **Version:** 1.0  
-**Status:** PROPOSED — AWAITING HUMAN APPROVAL  
+**Status:** APPROVED  
 **Date:** 2026-08-15  
 **Milestone:** M6 — Appointment Operations  
 **Depends on:** approved `docs/ADR-FOLLOWUP-M4.md` (M4-13 lifecycle; M4-10 permissions; M4-16 retention; M4-17 history) and approved `docs/ADR-FOLLOWUP-M5.md` (M5-06 events; M5-09 worker disabled by default)  
 **Scope:** Confirm, check-in, start, complete, and no-show operations on existing organization-scoped appointments  
-**This file is not an approved ADR.**
-
-Agents and coding assistants must not mark this document approved.
-
-No Appointment Operations implementation may begin until the decisions in this document are reviewed and the human approval section is completed as `APPROVED`.
+This file is the approved M6 architecture decision record.
 
 ```text
-M6 IMPLEMENTATION BLOCKED — AWAITING HUMAN M6 DECISION APPROVAL
-```
+This approval authorizes M6 implementation only within M6-01 through M6-12.
 
-This proposal does **not** authorize production release, deployment, merge to `main`, real SMTP enablement, calendar integration, clinical notes, billing, patient-portal features, or M7 work.
+It does not authorize production release, deployment, merge to main, calendar integration, clinical documentation, billing, patient self-service, new M5 notification event types, or unrelated features.
+```
 
 ---
 
@@ -27,7 +23,11 @@ This proposal does **not** authorize production release, deployment, merge to `m
 
 M4 persisted the appointment status vocabulary and implemented **create**, **read**, **reschedule**, and **cancel**. Status values `CONFIRMED`, `CHECKED_IN`, `IN_PROGRESS`, `COMPLETED`, and `NO_SHOW` already exist in the CHECK constraint and domain helpers, but **no command mutates into those states**.
 
-M6 would add the remaining lifecycle operations. Implementation is blocked until the human project owner approves M6-01 through M6-12.
+M6 may add the remaining lifecycle operations according to the approved decisions in this document.
+
+```text
+APPROVED — M6 implementation authorized within M6-01 through M6-12 only
+```
 
 ---
 
@@ -115,9 +115,9 @@ M1–M5 architecture is not to be redesigned by M6.
 
 ---
 
-# 3. Decision summary (proposed)
+# 3. Decision summary (approved)
 
-| #     | Decision                       | Proposed decision                                                                                                                                                                                                          |
+| #     | Decision                       | Approved decision                                                                                                                                                                                                          |
 | ----- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M6-01 | Status lifecycle               | Strict forward transitions only. No skipped states. `NO_SHOW` only from `CONFIRMED`. Terminal: `COMPLETED`, `NO_SHOW`, `CANCELLED`.                                                                                        |
 | M6-02 | Cancel after check-in / start  | Cancel **allowed** after check-in. Cancel **not allowed** after `IN_PROGRESS`. This **narrows** M4 `canCancel`.                                                                                                            |
@@ -132,7 +132,7 @@ M1–M5 architecture is not to be redesigned by M6.
 | M6-11 | Reopen                         | **No reopen in M6.** Terminal states stay terminal.                                                                                                                                                                        |
 | M6-12 | Retention / hard delete        | Preserve M4-16: no hard delete.                                                                                                                                                                                            |
 
-These are **proposed**, not approved. The human may change any row before marking this record `APPROVED`.
+These decisions are **approved**. Future changes require a new or updated decision record.
 
 ---
 
@@ -452,28 +452,21 @@ No `DELETE /api/appointments/:id`. Foreign keys remain `ON DELETE RESTRICT`. Ter
 
 ---
 
-# 17. Implementation freeze
+# 17. Authorization of implementation
 
-Until §19 is `APPROVED`:
+This approved record authorizes a **later** M6 implementation task to follow M6-01 through M6-12.
 
 ```text
-M6 IMPLEMENTATION BLOCKED — AWAITING HUMAN M6 DECISION APPROVAL
+This approval authorizes M6 implementation only within M6-01 through M6-12.
+
+It does not authorize production release, deployment, merge to main, calendar integration, clinical documentation, billing, patient self-service, new M5 notification event types, or unrelated features.
 ```
 
-Do **not**:
-
-- add confirm / check-in / start / complete / no-show routes or services
-- add or seed M6 permission keys
-- change `canCancel` / transition helpers for M6
-- add migrations or status-constraint changes
-- add history event types in code
-- write new outbox event types
-- change the M5 worker, SMTP, or retry behavior (except the already-committed M5-07 config cleanup)
-- merge to `main`, deploy, enable real SMTP, start calendar integration, or add clinical / billing / patient-portal / M7 features
+This approval task does **not** start that implementation.
 
 ---
 
-# 18. What the human must confirm
+# 18. What was approved
 
 1. Exact allowed transitions (M6-01), including `NO_SHOW` source states.
 2. Cancel after `CHECKED_IN` and after `IN_PROGRESS` (M6-02). Proposed: yes after check-in, no after start.
@@ -495,23 +488,15 @@ Do **not**:
 ## Approval Status
 
 ```text
-PROPOSED — AWAITING HUMAN APPROVAL
-```
-
-After review, the human may change this section to:
-
-```text
 APPROVED
 ```
-
-Agents and coding assistants must not make that change.
 
 ## Approved By
 
 ```text
-Name:
-Role:
-Date:
+Name: Project Owner
+Role: Project Owner
+Date: 2026-08-15
 ```
 
 ## Human Approval Statement
@@ -521,14 +506,14 @@ I have reviewed the M6 Appointment Operations decisions in this document and app
 I understand that:
 
 - M6 implementation will follow these decisions only.
-- This approval does not authorize production release, deployment, or merge to `main`.
-- This approval does not authorize real SMTP enablement, calendar integration, clinical records, billing, patient portal, or M7 work.
+- This approval authorizes M6 implementation only within M6-01 through M6-12.
+- It does not authorize production release, deployment, merge to main, calendar integration, clinical documentation, billing, patient self-service, new M5 notification event types, or unrelated features.
 - Future changes require a new or updated decision record.
 
 ```text
 Human Approval:
 
-[ ] APPROVED
+[x] APPROVED
 [ ] NOT APPROVED
 ```
 
@@ -536,14 +521,10 @@ Human Approval:
 
 # 20. Post-approval rule
 
-Once this document is `APPROVED`, it becomes the M6 implementation source of truth.
+This document is the M6 implementation source of truth.
 
-A **separate** implementation task may then follow M6-01 through M6-12.
+A **separate** implementation task may follow M6-01 through M6-12. This approval does not itself add routes, migrations, permissions, notifications, tests, or worker changes.
 
 If implementation reveals a conflict with approved M4 or M5: **STOP** and report it. Do not silently change the architecture.
 
-Until that approval:
-
-```text
-M6 IMPLEMENTATION BLOCKED — AWAITING HUMAN M6 DECISION APPROVAL
-```
+Production release, deployment, and merge to `main` remain separate decisions.
