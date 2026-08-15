@@ -14,7 +14,7 @@ const envSchema = z
         (value) => value.startsWith("postgresql://") || value.startsWith("postgres://"),
         "DATABASE_URL must be a PostgreSQL connection string",
       ),
-    AUTH_PROVIDER: z.enum(["unset", "managed"]).default("unset"),
+    AUTH_PROVIDER: z.enum(["unset", "managed", "otp"]).default("unset"),
     APP_BASE_URL: z.string().url().default("http://localhost:3000"),
     OIDC_ISSUER: z.string().url().optional(),
     OIDC_CLIENT_ID: z.string().min(1).optional(),
@@ -25,6 +25,20 @@ const envSchema = z
     AUTH_SESSION_TTL_SECONDS: z.coerce.number().int().positive().max(86_400).default(28_800),
     AUTH_CLOCK_SKEW_SECONDS: z.coerce.number().int().min(0).max(120).default(60),
     AUTH_COOKIE_SECURE: z.enum(["true", "false"]).optional(),
+    OTP_ISSUER: z.string().url().optional(),
+    OTP_PEPPER: z.string().min(32).optional(),
+    OTP_LENGTH: z.coerce.number().int().min(4).max(10).default(6),
+    OTP_TTL_SECONDS: z.coerce.number().int().positive().max(3600).default(300),
+    OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().max(20).default(5),
+    OTP_RESEND_COOLDOWN_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
+    OTP_MAX_RESENDS: z.coerce.number().int().positive().max(20).default(5),
+    OTP_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().max(3600).default(60),
+    OTP_RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().max(100).default(5),
+    OTP_VERIFY_RATE_LIMIT_MAX: z.coerce.number().int().positive().max(100).default(10),
+    INVITATION_TTL_SECONDS: z.coerce.number().int().positive().max(2_592_000).default(604_800),
+    REGISTRATION_SESSION_TTL_SECONDS: z.coerce.number().int().positive().max(86_400).default(3_600),
+    SMS_PROVIDER: z.enum(["unset", "fake"]).default("unset"),
+    OTP_ALLOW_FAKE_SMS: z.enum(["true", "false"]).default("false"),
     SMTP_HOST: z.string().min(1).optional(),
     SMTP_PORT: z.coerce.number().int().positive().max(65535).optional(),
     SMTP_USERNAME: z.string().min(1).optional(),
@@ -51,40 +65,71 @@ const envSchema = z
         });
       }
     }
-    if (data.AUTH_PROVIDER !== "managed") {
-      return;
-    }
-    const required = {
-      OIDC_ISSUER: data.OIDC_ISSUER,
-      OIDC_CLIENT_ID: data.OIDC_CLIENT_ID,
-      OIDC_REDIRECT_URI: data.OIDC_REDIRECT_URI,
-      AUTH_SESSION_SECRET: data.AUTH_SESSION_SECRET,
-    } as const;
-    for (const [field, value] of Object.entries(required)) {
-      if (!value) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: [field],
-          message: `${field} is required when AUTH_PROVIDER=managed`,
-        });
+    if (data.AUTH_PROVIDER === "managed") {
+      const required = {
+        OIDC_ISSUER: data.OIDC_ISSUER,
+        OIDC_CLIENT_ID: data.OIDC_CLIENT_ID,
+        OIDC_REDIRECT_URI: data.OIDC_REDIRECT_URI,
+        AUTH_SESSION_SECRET: data.AUTH_SESSION_SECRET,
+      } as const;
+      for (const [field, value] of Object.entries(required)) {
+        if (!value) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [field],
+            message: `${field} is required when AUTH_PROVIDER=managed`,
+          });
+        }
+      }
+      if (data.NODE_ENV === "production" && data.OIDC_REDIRECT_URI) {
+        if (isLoopbackUrl(data.OIDC_REDIRECT_URI)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["OIDC_REDIRECT_URI"],
+            message: "production must not use loopback redirect URIs",
+          });
+        }
+      }
+      if (data.NODE_ENV === "production" && data.OIDC_POST_LOGOUT_REDIRECT_URI) {
+        if (isLoopbackUrl(data.OIDC_POST_LOGOUT_REDIRECT_URI)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["OIDC_POST_LOGOUT_REDIRECT_URI"],
+            message: "production must not use loopback logout redirect URIs",
+          });
+        }
       }
     }
-    if (data.NODE_ENV === "production" && data.OIDC_REDIRECT_URI) {
-      if (isLoopbackUrl(data.OIDC_REDIRECT_URI)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["OIDC_REDIRECT_URI"],
-          message: "production must not use loopback redirect URIs",
-        });
+    if (data.AUTH_PROVIDER === "otp") {
+      const required = {
+        OTP_ISSUER: data.OTP_ISSUER,
+        OTP_PEPPER: data.OTP_PEPPER,
+        AUTH_SESSION_SECRET: data.AUTH_SESSION_SECRET,
+      } as const;
+      for (const [field, value] of Object.entries(required)) {
+        if (!value) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [field],
+            message: `${field} is required when AUTH_PROVIDER=otp`,
+          });
+        }
       }
-    }
-    if (data.NODE_ENV === "production" && data.OIDC_POST_LOGOUT_REDIRECT_URI) {
-      if (isLoopbackUrl(data.OIDC_POST_LOGOUT_REDIRECT_URI)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["OIDC_POST_LOGOUT_REDIRECT_URI"],
-          message: "production must not use loopback logout redirect URIs",
-        });
+      if (data.NODE_ENV === "production") {
+        if (data.SMS_PROVIDER === "fake" || data.OTP_ALLOW_FAKE_SMS === "true") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["SMS_PROVIDER"],
+            message: "production must not use fake SMS for OTP",
+          });
+        }
+        if (data.SMS_PROVIDER === "unset") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["SMS_PROVIDER"],
+            message: "production OTP requires a configured SMS provider (not yet selected in C3)",
+          });
+        }
       }
     }
   });

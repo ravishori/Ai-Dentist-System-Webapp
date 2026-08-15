@@ -116,3 +116,20 @@ export {
   handlePractitionerAvailability,
 } from "./practitioner/index.js";
 export type { PractitionerHttpResult } from "./practitioner/index.js";
+export {
+  generateNumericOtp,
+  hashOtp,
+  verifyOtpHash,
+  hashSecretToken,
+  FakeSmsDeliveryAdapter,
+  FailClosedSmsDeliveryAdapter,
+  InMemoryRateLimitBucketStore,
+  OtpChallengeService,
+  InvitationApplicationService,
+  InMemoryOtpChallengeStore,
+  InMemoryInvitationStore,
+  InMemoryRegistrationSessionStore,
+  OtpAuthenticationAdapter,
+  RegistrationCompletionService,
+} from "./identity/index.js";
+export { otpConfigFromApp } from "./foundation/index.js";
