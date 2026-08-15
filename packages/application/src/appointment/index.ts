@@ -16,11 +16,8 @@ export {
   handleAppointmentComplete,
   handleAppointmentNoShow,
 } from "./http.js";
-export {
-  InMemoryAppointmentRepository,
-  InMemoryPractitionerRepository,
-  InMemoryBranchLookup,
-} from "./in-memory-repository.js";
+export { InMemoryAppointmentRepository, InMemoryBranchLookup } from "./in-memory-repository.js";
+export { InMemoryPractitionerRepository } from "../practitioner/in-memory-repository.js";
 export {
   parseCreateInput,
   parseRescheduleInput,
