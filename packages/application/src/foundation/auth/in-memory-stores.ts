@@ -95,6 +95,30 @@ export class InMemoryUserIdentityDirectory implements UserIdentityDirectory {
     return created;
   }
 
+  async linkIdentity(input: {
+    userId: string;
+    issuer: string;
+    subject: string;
+    email?: string;
+    emailVerified?: boolean;
+  }): Promise<IdentityRecord> {
+    const key = `${input.issuer}|${input.subject}`;
+    const existing = this.byKey.get(key);
+    if (existing) {
+      return existing;
+    }
+    const created: IdentityRecord = {
+      userId: input.userId,
+      status: "active",
+      email: input.email,
+      emailVerified: input.emailVerified ?? false,
+      issuer: input.issuer,
+      subject: input.subject,
+    };
+    this.byKey.set(key, created);
+    return created;
+  }
+
   disable(issuer: string, subject: string): void {
     const key = `${issuer}|${subject}`;
     const existing = this.byKey.get(key);

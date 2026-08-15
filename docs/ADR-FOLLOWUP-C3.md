@@ -92,3 +92,12 @@ Stop and ask if:
 - `verificationStatus` would silently rewrite M7 `status` semantics
 - Production OTP would be enabled without SMS/email providers
 - Client JWT session would be introduced alongside `dc_session`
+
+---
+
+## Phase 5 status (2026-08-15)
+
+- Classification: **DEVELOPMENT COMPLETE — EXTERNAL INFRASTRUCTURE PENDING**
+- Reports: `docs/TDA-C3-PHASE5-RELEASE-REPORT.md`, `docs/TDA-C3-PHASE5-ENV-AUDIT.md`, `docs/TDA-C3-PHASE5-SECURITY-AUDIT.md`
+- In-process OTP E2E + security matrix: implemented
+- Staging DB / production SMS / Cognito cutover: **not claimed**

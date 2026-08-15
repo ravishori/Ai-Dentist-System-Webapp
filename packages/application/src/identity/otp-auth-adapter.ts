@@ -69,12 +69,20 @@ export class OtpAuthenticationAdapter implements AuthenticationPort {
     );
     const identityRecord =
       record ??
-      (await this.identityDirectory.provisionFromClaims({
-        issuer: this.config.issuer,
-        subject: input.userId,
-        email: input.email,
-        emailVerified: input.emailVerified ?? Boolean(input.email),
-      }));
+      (this.identityDirectory.linkIdentity
+        ? await this.identityDirectory.linkIdentity({
+            userId: input.userId,
+            issuer: this.config.issuer,
+            subject: input.userId,
+            email: input.email,
+            emailVerified: input.emailVerified ?? Boolean(input.email),
+          })
+        : await this.identityDirectory.provisionFromClaims({
+            issuer: this.config.issuer,
+            subject: input.userId,
+            email: input.email,
+            emailVerified: input.emailVerified ?? Boolean(input.email),
+          }));
 
     if (identityRecord.status !== "active") {
       throw new AuthenticationError("account_disabled", "user_inactive");

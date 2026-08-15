@@ -84,7 +84,10 @@ export class InMemoryInvitationStore implements InvitationStore {
     purpose: InvitationPurpose;
     now: Date;
   }): Promise<OrganizationInvitation | null> {
-    const invitation = await this.findInvitationByTokenHash(input.tokenHash);
+    // Critical section must not await between read and write so concurrent
+    // redeemers cannot both observe PENDING (mirrors Prisma updateMany CAS).
+    const id = this.invitationsByHash.get(input.tokenHash);
+    const invitation = id ? (this.invitations.get(id) ?? null) : null;
     if (
       !invitation ||
       invitation.purpose !== input.purpose ||
@@ -102,7 +105,8 @@ export class InMemoryInvitationStore implements InvitationStore {
       redeemedAt: input.now.toISOString(),
       updatedAt: input.now.toISOString(),
     };
-    await this.updateInvitation(updated);
+    this.invitations.set(updated.id, updated);
+    this.invitationsByHash.set(updated.tokenHash, updated.id);
     return updated;
   }
 

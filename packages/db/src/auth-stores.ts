@@ -152,6 +152,47 @@ export class PrismaUserIdentityDirectory implements UserIdentityDirectory {
       subject: input.subject,
     };
   }
+
+  async linkIdentity(input: {
+    userId: string;
+    issuer: string;
+    subject: string;
+    email?: string;
+    emailVerified?: boolean;
+  }): Promise<IdentityRecord> {
+    const existing = await this.prisma.userIdentity.findUnique({
+      where: { issuer_subject: { issuer: input.issuer, subject: input.subject } },
+      include: { user: true },
+    });
+    if (existing) {
+      return toIdentity(existing);
+    }
+    const identity = await this.prisma.userIdentity.create({
+      data: {
+        userId: input.userId,
+        issuer: input.issuer,
+        subject: input.subject,
+      },
+      include: { user: true },
+    });
+    if (input.email !== undefined || input.emailVerified !== undefined) {
+      await this.prisma.user.update({
+        where: { id: input.userId },
+        data: {
+          email: input.email,
+          emailVerified: input.emailVerified ?? false,
+        },
+      });
+      const refreshed = await this.prisma.userIdentity.findUnique({
+        where: { issuer_subject: { issuer: input.issuer, subject: input.subject } },
+        include: { user: true },
+      });
+      if (refreshed) {
+        return toIdentity(refreshed);
+      }
+    }
+    return toIdentity(identity);
+  }
 }
 
 function toIdentity(identity: {
