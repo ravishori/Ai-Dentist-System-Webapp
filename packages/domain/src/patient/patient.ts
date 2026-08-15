@@ -19,6 +19,10 @@ export interface Patient {
   readonly email?: string;
   readonly phone?: string;
   readonly status: PatientStatus;
+  readonly appointmentNotificationConsent: boolean;
+  readonly appointmentNotificationConsentAt?: string;
+  readonly appointmentNotificationOptOut: boolean;
+  readonly appointmentNotificationOptedOutAt?: string;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -38,6 +42,8 @@ export interface PatientUpdateInput {
   readonly email?: string | null;
   readonly phone?: string | null;
   readonly status?: PatientStatus;
+  readonly appointmentNotificationConsent?: boolean;
+  readonly appointmentNotificationOptOut?: boolean;
 }
 
 export class PatientValidationError extends Error {

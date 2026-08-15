@@ -23,6 +23,8 @@ export class InMemoryPatientRepository implements PatientRepository {
       email: input.email,
       phone: input.phone,
       status: "active",
+      appointmentNotificationConsent: false,
+      appointmentNotificationOptOut: false,
       createdAt: now,
       updatedAt: now,
     };
@@ -59,6 +61,15 @@ export class InMemoryPatientRepository implements PatientRepository {
     if (!existing) {
       return null;
     }
+    const now = new Date().toISOString();
+    const consent =
+      input.appointmentNotificationConsent === undefined
+        ? existing.appointmentNotificationConsent
+        : input.appointmentNotificationConsent;
+    const optOut =
+      input.appointmentNotificationOptOut === undefined
+        ? existing.appointmentNotificationOptOut
+        : input.appointmentNotificationOptOut;
     const updated: Patient = {
       ...existing,
       firstName: input.firstName ?? existing.firstName,
@@ -67,7 +78,21 @@ export class InMemoryPatientRepository implements PatientRepository {
       email: input.email === null ? undefined : (input.email ?? existing.email),
       phone: input.phone === null ? undefined : (input.phone ?? existing.phone),
       status: input.status ?? existing.status,
-      updatedAt: new Date().toISOString(),
+      appointmentNotificationConsent: consent,
+      appointmentNotificationConsentAt:
+        input.appointmentNotificationConsent === undefined
+          ? existing.appointmentNotificationConsentAt
+          : input.appointmentNotificationConsent
+            ? now
+            : undefined,
+      appointmentNotificationOptOut: optOut,
+      appointmentNotificationOptedOutAt:
+        input.appointmentNotificationOptOut === undefined
+          ? existing.appointmentNotificationOptedOutAt
+          : input.appointmentNotificationOptOut
+            ? now
+            : undefined,
+      updatedAt: now,
     };
     this.records.set(patientId, updated);
     return updated;

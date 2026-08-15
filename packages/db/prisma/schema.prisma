@@ -7,6 +7,7 @@
 // M2: organization/tenant, membership, RBAC catalog, security event log.
 // M3: organization-scoped patient identity.
 // M4: organization-scoped appointments and minimum practitioner profiles.
+// M5: appointment-notification consent and outbox delivery metadata.
 
 generator client {
   provider = "prisma-client-js"
@@ -200,13 +201,17 @@ model Patient {
   firstName      String
   lastName       String
   dateOfBirth    DateTime     @db.Date
-  email          String?
-  phone          String?
-  status         String       @default("active")
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  appointments   Appointment[]
+  email                             String?
+  phone                             String?
+  status                            String    @default("active")
+  appointmentNotificationConsent    Boolean   @default(false)
+  appointmentNotificationConsentAt  DateTime?
+  appointmentNotificationOptOut     Boolean   @default(false)
+  appointmentNotificationOptedOutAt DateTime?
+  createdAt                         DateTime  @default(now())
+  updatedAt                         DateTime  @updatedAt
+  organization                      Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  appointments                      Appointment[]
 
   @@index([organizationId])
   @@map("patients")
@@ -269,14 +274,23 @@ model AppointmentHistory {
 }
 
 model NotificationOutbox {
-  id             String      @id @default(cuid())
-  organizationId String
-  appointmentId  String
-  eventType      String
-  status         String      @default("pending")
-  createdAt      DateTime    @default(now())
-  appointment    Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  id                String      @id @default(cuid())
+  organizationId    String
+  appointmentId     String
+  eventType         String
+  status            String      @default("pending")
+  attemptCount      Int         @default(0)
+  claimedAt         DateTime?   @db.Timestamptz
+  claimedUntil      DateTime?   @db.Timestamptz
+  claimedBy         String?
+  nextAttemptAt     DateTime    @default(now()) @db.Timestamptz
+  processedAt       DateTime?   @db.Timestamptz
+  lastErrorCode     String?
+  providerMessageId String?
+  createdAt         DateTime    @default(now())
+  appointment       Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
 
+  @@index([status, nextAttemptAt])
   @@index([status, createdAt])
   @@index([organizationId, status])
   @@map("notification_outbox")

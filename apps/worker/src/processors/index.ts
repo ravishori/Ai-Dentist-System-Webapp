@@ -1,8 +1,13 @@
 /**
  * Processor registry for the notification worker.
- * M4 will register outbox claim/dispatch adapters here.
  * Provider calls must never execute inside the originating business transaction.
  */
+export const REGISTERED_OUTBOX_PROCESSORS = [
+  "appointment.created",
+  "appointment.rescheduled",
+  "appointment.cancelled",
+] as const;
+
 export interface ProcessorRegistry {
   list(): string[];
 }
@@ -10,7 +15,7 @@ export interface ProcessorRegistry {
 export function createProcessorRegistry(): ProcessorRegistry {
   return {
     list() {
-      return [];
+      return [...REGISTERED_OUTBOX_PROCESSORS];
     },
   };
 }

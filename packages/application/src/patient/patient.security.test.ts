@@ -94,6 +94,15 @@ describe("patient domain validation", () => {
     expect(() => parseCreateInput({ ...SAMPLE, phone: "abc" })).toThrow(PatientValidationError);
   });
 
+  it("rejects consent fields on create", () => {
+    expect(() => parseCreateInput({ ...SAMPLE, appointmentNotificationConsent: true })).toThrow(
+      PatientValidationError,
+    );
+    expect(() => parseCreateInput({ ...SAMPLE, appointmentNotificationOptOut: true })).toThrow(
+      PatientValidationError,
+    );
+  });
+
   it("rejects tenant ownership fields in the body", () => {
     expect(() =>
       parseCreateInput({
@@ -251,6 +260,27 @@ describe("patient authorization and BOLA", () => {
       status: "inactive",
     });
     expect(archived).toMatchObject({ ok: true, data: { status: "inactive" } });
+  });
+
+  it("STAFF can grant appointment-notification consent and opt-out", async () => {
+    const { service } = harness();
+    const created = await service.create(identity(STAFF_A), ORG_A, SAMPLE);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const consented = await service.update(identity(STAFF_A), ORG_A, created.data.id, {
+      appointmentNotificationConsent: true,
+    });
+    expect(consented.ok).toBe(true);
+    if (!consented.ok) return;
+    expect(consented.data.appointmentNotificationConsent).toBe(true);
+    expect(consented.data.appointmentNotificationConsentAt).toBeTruthy();
+    const optedOut = await service.update(identity(STAFF_A), ORG_A, created.data.id, {
+      appointmentNotificationOptOut: true,
+    });
+    expect(optedOut.ok).toBe(true);
+    if (!optedOut.ok) return;
+    expect(optedOut.data.appointmentNotificationOptOut).toBe(true);
+    expect(optedOut.data.appointmentNotificationOptedOutAt).toBeTruthy();
   });
 
   it("SYSTEM_ADMIN without membership cannot access patients", async () => {

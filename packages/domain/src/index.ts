@@ -24,16 +24,19 @@ export {
   FOUNDATION_PERMISSIONS,
   PATIENT_PERMISSIONS,
   APPOINTMENT_PERMISSIONS,
+  NOTIFICATION_PERMISSIONS,
   APPLICATION_PERMISSIONS,
   PLATFORM_PERMISSIONS,
   isFoundationPermission,
   isPatientPermission,
   isAppointmentPermission,
+  isNotificationPermission,
   isApplicationPermission,
   isPlatformPermission,
   type FoundationPermission,
   type PatientPermission,
   type AppointmentPermission,
+  type NotificationPermission,
   type ApplicationPermission,
   type PlatformPermission,
   TENANT_ROLE_KEYS,
@@ -88,7 +91,25 @@ export {
   type PractitionerRepository,
   type BranchLookup,
 } from "./appointment/index.js";
-export { NOTIFICATION_BOUNDARY } from "./notification/index.js";
+export {
+  NOTIFICATION_BOUNDARY,
+  OUTBOX_STATUSES,
+  isOutboxStatus,
+  NOTIFICATION_MAX_ATTEMPTS,
+  NOTIFICATION_RETRY_DELAYS_MS,
+  NOTIFICATION_ERROR_CATEGORIES,
+  type NotificationChannel,
+  type NotificationDeliveryOutcome,
+  type NotificationMessage,
+  type NotificationDeliveryResult,
+  type NotificationDeliveryPort,
+  type OutboxStatus,
+  type NotificationErrorCategory,
+  type NotificationOutboxRecord,
+  type OutboxClaimOptions,
+  type NotificationAuditInput,
+  type NotificationOutboxRepository,
+} from "./notification/index.js";
 
 export const DOMAIN_BOUNDARIES = ["foundation", "patient", "appointment", "notification"] as const;
 

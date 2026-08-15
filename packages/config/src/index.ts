@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const SENSITIVE_KEY =
-  /(password|secret|token|authorization|api[_-]?key|database_url|private|code_verifier|nonce|refresh)/i;
+  /(password|secret|token|authorization|api[_-]?key|database_url|private|code_verifier|nonce|refresh|smtp_username|recipient|to_address|text_body|html_body|message_body|from_email|from_address)/i;
 
 const envSchema = z
   .object({
@@ -26,13 +26,31 @@ const envSchema = z
     AUTH_CLOCK_SKEW_SECONDS: z.coerce.number().int().min(0).max(120).default(60),
     AUTH_COOKIE_SECURE: z.enum(["true", "false"]).optional(),
     SMTP_HOST: z.string().min(1).optional(),
-    SMTP_PORT: z.coerce.number().int().positive().optional(),
+    SMTP_PORT: z.coerce.number().int().positive().max(65535).optional(),
     SMTP_USERNAME: z.string().min(1).optional(),
     SMTP_PASSWORD: z.string().min(1).optional(),
     TWILIO_ACCOUNT_SID: z.string().min(1).optional(),
     TWILIO_AUTH_TOKEN: z.string().min(1).optional(),
+    NOTIFICATION_PROCESSING_ENABLED: z.enum(["true", "false"]).default("false"),
+    NOTIFICATION_PROVIDER: z.enum(["unset", "fake", "smtp"]).default("unset"),
+    NOTIFICATION_ALLOW_REAL_DELIVERY: z.enum(["true", "false"]).default("false"),
+    NOTIFICATION_POLL_INTERVAL_SECONDS: z.coerce.number().int().positive().max(3600).default(60),
+    NOTIFICATION_CLAIM_LEASE_SECONDS: z.coerce.number().int().positive().max(3600).default(120),
+    NOTIFICATION_FROM_EMAIL: z.string().email().optional(),
+    NOTIFICATION_FROM_DOMAIN: z.string().min(1).optional(),
+    NOTIFICATION_FROM_NAME: z.string().min(1).max(80).optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.NOTIFICATION_FROM_EMAIL && data.NOTIFICATION_FROM_DOMAIN) {
+      const domain = data.NOTIFICATION_FROM_EMAIL.split("@")[1]?.toLowerCase();
+      if (domain !== data.NOTIFICATION_FROM_DOMAIN.toLowerCase()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["NOTIFICATION_FROM_EMAIL"],
+          message: "NOTIFICATION_FROM_EMAIL must use NOTIFICATION_FROM_DOMAIN",
+        });
+      }
+    }
     if (data.AUTH_PROVIDER !== "managed") {
       return;
     }

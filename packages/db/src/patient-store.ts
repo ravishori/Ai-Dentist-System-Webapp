@@ -19,6 +19,8 @@ export class PrismaPatientRepository implements PatientRepository {
         email: input.email,
         phone: input.phone,
         status: "active",
+        appointmentNotificationConsent: false,
+        appointmentNotificationOptOut: false,
       },
     });
     return toPatient(record);
@@ -56,6 +58,20 @@ export class PrismaPatientRepository implements PatientRepository {
         email: input.email === null ? null : input.email,
         phone: input.phone === null ? null : input.phone,
         status: input.status,
+        appointmentNotificationConsent: input.appointmentNotificationConsent,
+        appointmentNotificationConsentAt:
+          input.appointmentNotificationConsent === undefined
+            ? undefined
+            : input.appointmentNotificationConsent
+              ? new Date()
+              : null,
+        appointmentNotificationOptOut: input.appointmentNotificationOptOut,
+        appointmentNotificationOptedOutAt:
+          input.appointmentNotificationOptOut === undefined
+            ? undefined
+            : input.appointmentNotificationOptOut
+              ? new Date()
+              : null,
       },
     });
     if (result.count !== 1) {
@@ -78,6 +94,10 @@ function toPatient(record: {
   email: string | null;
   phone: string | null;
   status: string;
+  appointmentNotificationConsent: boolean;
+  appointmentNotificationConsentAt: Date | null;
+  appointmentNotificationOptOut: boolean;
+  appointmentNotificationOptedOutAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }): Patient {
@@ -90,6 +110,10 @@ function toPatient(record: {
     email: record.email ?? undefined,
     phone: record.phone ?? undefined,
     status: record.status === "inactive" ? "inactive" : "active",
+    appointmentNotificationConsent: record.appointmentNotificationConsent,
+    appointmentNotificationConsentAt: record.appointmentNotificationConsentAt?.toISOString(),
+    appointmentNotificationOptOut: record.appointmentNotificationOptOut,
+    appointmentNotificationOptedOutAt: record.appointmentNotificationOptedOutAt?.toISOString(),
     createdAt: record.createdAt.toISOString(),
     updatedAt: record.updatedAt.toISOString(),
   };

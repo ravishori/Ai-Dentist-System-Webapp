@@ -14,6 +14,8 @@ describe("loadConfig", () => {
     const config = loadConfig(validEnv);
     expect(config.NODE_ENV).toBe("test");
     expect(config.AUTH_PROVIDER).toBe("unset");
+    expect(config.NOTIFICATION_PROCESSING_ENABLED).toBe("false");
+    expect(config.NOTIFICATION_POLL_INTERVAL_SECONDS).toBe(60);
     expect(config.DATABASE_URL.startsWith("postgresql://")).toBe(true);
   });
 
@@ -27,6 +29,16 @@ describe("loadConfig", () => {
       expect(String(error)).not.toContain("not-a-postgres-url");
       expect((error as ConfigurationError).fieldNames).toContain("DATABASE_URL");
     }
+  });
+
+  it("rejects from-address that does not match the verified sender domain", () => {
+    expect(() =>
+      loadConfig({
+        ...validEnv,
+        NOTIFICATION_FROM_EMAIL: "noreply@other.test",
+        NOTIFICATION_FROM_DOMAIN: "example.test",
+      }),
+    ).toThrow(ConfigurationError);
   });
 });
 

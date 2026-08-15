@@ -653,6 +653,38 @@ describe("appointment lifecycle and scheduling integrity", () => {
     expect(h.appointments.records.size).toBe(0);
     expect(h.appointments.outbox).toHaveLength(0);
   });
+
+  it("does not call a notification provider during create, reschedule, or cancel", async () => {
+    const h = harness();
+    const seed = await seedOrg(h, ORG_A);
+    const { FakeNotificationAdapter } = await import("../notification/fake-adapter.js");
+    const adapter = new FakeNotificationAdapter();
+    const created = await handleAppointmentCreate(h.service, {
+      identity: identity(STAFF_A),
+      organizationId: ORG_A,
+      body: createBody(seed),
+    });
+    expect(created.status).toBe(201);
+    const appointmentId = (created.body.appointment as { id: string }).id;
+    await handleAppointmentReschedule(h.service, {
+      identity: identity(STAFF_A),
+      organizationId: ORG_A,
+      appointmentId,
+      body: SLOT_B,
+    });
+    await handleAppointmentCancel(h.service, {
+      identity: identity(STAFF_A),
+      organizationId: ORG_A,
+      appointmentId,
+    });
+    expect(h.appointments.outbox.map((row) => row.eventType)).toEqual([
+      "appointment.created",
+      "appointment.rescheduled",
+      "appointment.cancelled",
+    ]);
+    expect(h.appointments.outbox.every((row) => row.status === "pending")).toBe(true);
+    expect(adapter.uniqueSendCount()).toBe(0);
+  });
 });
 
 describe("M4 schema constraints", () => {
@@ -677,5 +709,22 @@ describe("M4 schema constraints", () => {
     expect(sql).not.toContain("appointment.read.self");
     expect(sql).not.toContain("role_system_admin");
     expect(sql).not.toContain("ON DELETE CASCADE");
+  });
+});
+
+describe("appointment HTTP isolation from delivery", () => {
+  it("appointment handlers and store do not import a delivery port or SMTP library", () => {
+    const files = [
+      "packages/application/src/appointment/service.ts",
+      "packages/application/src/appointment/http.ts",
+      "packages/db/src/appointment-store.ts",
+    ];
+    for (const file of files) {
+      const source = readFileSync(path.resolve(process.cwd(), file), "utf8");
+      expect(source).not.toContain("NotificationDeliveryPort");
+      expect(source).not.toContain("nodemailer");
+      expect(source).not.toContain("SmtpNotificationAdapter");
+      expect(source).not.toContain("FakeNotificationAdapter");
+    }
   });
 });

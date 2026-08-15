@@ -165,7 +165,9 @@ function requiredUpdatePermissions(input: PatientUpdateInput): string[] {
     input.lastName !== undefined ||
     input.dateOfBirth !== undefined ||
     input.email !== undefined ||
-    input.phone !== undefined
+    input.phone !== undefined ||
+    input.appointmentNotificationConsent !== undefined ||
+    input.appointmentNotificationOptOut !== undefined
   ) {
     permissions.push("patient.update.tenant");
   }
@@ -208,6 +210,8 @@ export function toPublicPatient(patient: Patient): Record<string, unknown> {
     lastName: patient.lastName,
     dateOfBirth: patient.dateOfBirth,
     status: patient.status,
+    appointmentNotificationConsent: patient.appointmentNotificationConsent,
+    appointmentNotificationOptOut: patient.appointmentNotificationOptOut,
     createdAt: patient.createdAt,
     updatedAt: patient.updatedAt,
   };
@@ -216,6 +220,12 @@ export function toPublicPatient(patient: Patient): Record<string, unknown> {
   }
   if (patient.phone) {
     body.phone = patient.phone;
+  }
+  if (patient.appointmentNotificationConsentAt) {
+    body.appointmentNotificationConsentAt = patient.appointmentNotificationConsentAt;
+  }
+  if (patient.appointmentNotificationOptedOutAt) {
+    body.appointmentNotificationOptedOutAt = patient.appointmentNotificationOptedOutAt;
   }
   return body;
 }
