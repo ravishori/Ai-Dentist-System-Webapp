@@ -24,6 +24,7 @@
     "format:check": "prettier --check .",
     "db:generate": "pnpm --filter @dentalcare/db db:generate",
     "db:validate": "pnpm --filter @dentalcare/db db:validate",
+    "db:migrate": "pnpm --filter @dentalcare/db db:migrate",
     "security:secrets": "bash scripts/check-secrets.sh",
     "security:audit": "pnpm audit --prod"
   },

@@ -44,3 +44,5 @@ TDA-ADR-003 selects **Amazon Cognito user pools, Essentials plan**, as the manag
 - No Cognito groups as the application authorization model
 - No calendar integration or clinical-record business schema or UI
 - No production deployment topology
+
+Staging hosting topology is recorded as **PROPOSED** in `docs/adr/ADR-IMP-005-staging-hosting-render.md` (Render + Docker web/worker + managed PostgreSQL 16). It is not production-approved and is not deployed by default. See `docs/STAGING-HOSTING.md`.

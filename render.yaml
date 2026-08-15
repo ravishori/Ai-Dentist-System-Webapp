@@ -1,0 +1,113 @@
+# AI Dentist — Render Blueprint for STAGING readiness.
+#
+# Status: IMPLEMENTED IN REPOSITORY — NOT DEPLOYED
+# Decision: docs/adr/ADR-IMP-005-staging-hosting-render.md (PROPOSED)
+#
+# Does NOT:
+# - deploy production
+# - configure the production custom domain
+# - enable SMTP
+# - provision Cognito
+# - auto-deploy on every push (autoDeployTrigger: off)
+#
+# Humans must connect this Blueprint in the Render dashboard and authorize
+# the first staging deploy after ADR approval.
+
+services:
+  - type: web
+    name: dentalcare-web-staging
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile.web
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: "off"
+    maxShutdownDelaySeconds: 120
+    preDeployCommand: pnpm db:migrate
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: AUTH_PROVIDER
+        value: unset
+      - key: NOTIFICATION_PROCESSING_ENABLED
+        value: "false"
+      - key: NOTIFICATION_PROVIDER
+        value: unset
+      - key: NOTIFICATION_ALLOW_REAL_DELIVERY
+        value: "false"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dentalcare-postgres-staging
+          property: connectionString
+      - key: APP_BASE_URL
+        sync: false
+      - key: OIDC_ISSUER
+        sync: false
+      - key: OIDC_CLIENT_ID
+        sync: false
+      - key: OIDC_CLIENT_SECRET
+        sync: false
+      - key: OIDC_REDIRECT_URI
+        sync: false
+      - key: OIDC_POST_LOGOUT_REDIRECT_URI
+        sync: false
+      - key: AUTH_SESSION_SECRET
+        sync: false
+      - key: AUTH_COOKIE_SECURE
+        value: "true"
+
+  - type: worker
+    name: dentalcare-worker-staging
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile.worker
+    dockerContext: .
+    autoDeployTrigger: "off"
+    maxShutdownDelaySeconds: 120
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: AUTH_PROVIDER
+        value: unset
+      - key: NOTIFICATION_PROCESSING_ENABLED
+        value: "false"
+      - key: NOTIFICATION_PROVIDER
+        value: unset
+      - key: NOTIFICATION_ALLOW_REAL_DELIVERY
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dentalcare-postgres-staging
+          property: connectionString
+      - key: APP_BASE_URL
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: NOTIFICATION_FROM_EMAIL
+        sync: false
+      - key: NOTIFICATION_FROM_DOMAIN
+        sync: false
+      - key: NOTIFICATION_FROM_NAME
+        sync: false
+
+databases:
+  - name: dentalcare-postgres-staging
+    databaseName: dentalcare
+    user: dentalcare
+    plan: basic-256mb
+    region: singapore
+    postgresMajorVersion: "16"

@@ -46,6 +46,7 @@ REVIEW documents are provisional and must not be treated as final. DECISION BASE
 | TDA-IMP-M5-001      | Security Hardening Implementation Plan                 | 1.0     | REVIEW                                                                                               | Implementation     |
 | TDA-IMP-M6-001      | E2E and Operations Implementation Plan                 | 1.0     | REVIEW                                                                                               | Implementation     |
 | TDA-IMP-M7-001      | Production Readiness Implementation Plan               | 1.0     | REVIEW                                                                                               | Implementation     |
+| ADR-IMP-005         | Staging hosting topology (Render)                      | 1.0     | PROPOSED — READY FOR HUMAN APPROVAL                                                                  | Architecture / ADR |
 
 ## Recorded stack reconciliation
 

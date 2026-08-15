@@ -1,0 +1,42 @@
+name: staging-infra
+
+on:
+  pull_request:
+    paths:
+      - "Dockerfile.web"
+      - "Dockerfile.worker"
+      - ".dockerignore"
+      - "render.yaml"
+      - "docs/STAGING-HOSTING.md"
+      - "docs/adr/ADR-IMP-005-staging-hosting-render.md"
+      - ".github/workflows/staging-infra.yml"
+      - "scripts/validate-staging-infra.sh"
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile.web"
+      - "Dockerfile.worker"
+      - ".dockerignore"
+      - "render.yaml"
+      - "docs/STAGING-HOSTING.md"
+      - "docs/adr/ADR-IMP-005-staging-hosting-render.md"
+      - ".github/workflows/staging-infra.yml"
+      - "scripts/validate-staging-infra.sh"
+
+concurrency:
+  group: staging-infra-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-config:
+    name: validate-staging-config
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate staging infrastructure files
+        run: bash scripts/validate-staging-infra.sh
+
+      # Intentionally no deploy steps. Staging deploy is human-authorized via Render.

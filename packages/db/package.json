@@ -13,7 +13,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:generate": "prisma generate --schema prisma/schema.prisma",
-    "db:validate": "prisma validate --schema prisma/schema.prisma"
+    "db:validate": "prisma validate --schema prisma/schema.prisma",
+    "db:migrate": "prisma migrate deploy --schema prisma/schema.prisma"
   },
   "dependencies": {
     "@dentalcare/application": "workspace:*",
