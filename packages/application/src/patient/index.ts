@@ -9,4 +9,4 @@ export {
   handlePatientPatch,
 } from "./http.js";
 export { InMemoryPatientRepository } from "./in-memory-repository.js";
-export { parseCreateInput, parseUpdateInput } from "./validation.js";
+export { parseCreateInput, parseUpdateInput, isValidPatientEmail } from "./validation.js";

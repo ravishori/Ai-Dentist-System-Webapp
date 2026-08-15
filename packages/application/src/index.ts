@@ -54,6 +54,7 @@ export {
   InMemoryPatientRepository,
   parseCreateInput,
   parseUpdateInput,
+  isValidPatientEmail,
 } from "./patient/index.js";
 export {
   AppointmentApplicationService,
@@ -70,3 +71,21 @@ export {
   parseCreateInput as parseAppointmentCreateInput,
   parseRescheduleInput,
 } from "./appointment/index.js";
+export {
+  resolveNotificationDelivery,
+  FakeNotificationAdapter,
+  FailClosedNotificationAdapter,
+  SmtpNotificationAdapter,
+  classifySmtpError,
+  createNotificationDeliveryPort,
+  evaluateRecipientEligibility,
+  renderAppointmentEmail,
+  isSupportedOutboxEvent,
+  nextRetryAt,
+  isTerminalAttempt,
+  InMemoryNotificationOutboxRepository,
+  NotificationOutboxProcessor,
+  NotificationApplicationService,
+  toPublicNotification,
+  handleNotificationGet,
+} from "./notification/index.js";

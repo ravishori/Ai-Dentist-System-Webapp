@@ -13,6 +13,7 @@ export {
   PrismaPractitionerRepository,
   PrismaBranchLookup,
 } from "./appointment-store.js";
+export { PrismaNotificationOutboxRepository } from "./notification-store.js";
 
 export function createPrismaClient(): PrismaClient {
   return new PrismaClient({

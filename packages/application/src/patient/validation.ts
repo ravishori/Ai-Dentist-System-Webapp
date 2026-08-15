@@ -4,12 +4,22 @@ import type { PatientCreateInput, PatientUpdateInput } from "@dentalcare/domain"
 const NAME_MAX = 80;
 const EMAIL_MAX = 254;
 const PHONE_MAX = 20;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const PATIENT_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_PATTERN = PATIENT_EMAIL_PATTERN;
 const PHONE_PATTERN = /^\+?[0-9][0-9\s-]{6,18}[0-9]$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 const CREATE_FIELDS = new Set(["firstName", "lastName", "dateOfBirth", "email", "phone"]);
-const UPDATE_FIELDS = new Set(["firstName", "lastName", "dateOfBirth", "email", "phone", "status"]);
+const UPDATE_FIELDS = new Set([
+  "firstName",
+  "lastName",
+  "dateOfBirth",
+  "email",
+  "phone",
+  "status",
+  "appointmentNotificationConsent",
+  "appointmentNotificationOptOut",
+]);
 
 export function assertNoForbiddenFields(
   raw: Record<string, unknown>,
@@ -42,6 +52,8 @@ export function parseUpdateInput(raw: Record<string, unknown>): PatientUpdateInp
     email?: string | null;
     phone?: string | null;
     status?: PatientUpdateInput["status"];
+    appointmentNotificationConsent?: boolean;
+    appointmentNotificationOptOut?: boolean;
   } = {};
   if ("firstName" in raw) draft.firstName = requireName(raw.firstName, "firstName");
   if ("lastName" in raw) draft.lastName = requireName(raw.lastName, "lastName");
@@ -53,6 +65,18 @@ export function parseUpdateInput(raw: Record<string, unknown>): PatientUpdateInp
       throw new PatientValidationError("status");
     }
     draft.status = raw.status;
+  }
+  if ("appointmentNotificationConsent" in raw) {
+    if (typeof raw.appointmentNotificationConsent !== "boolean") {
+      throw new PatientValidationError("appointmentNotificationConsent");
+    }
+    draft.appointmentNotificationConsent = raw.appointmentNotificationConsent;
+  }
+  if ("appointmentNotificationOptOut" in raw) {
+    if (typeof raw.appointmentNotificationOptOut !== "boolean") {
+      throw new PatientValidationError("appointmentNotificationOptOut");
+    }
+    draft.appointmentNotificationOptOut = raw.appointmentNotificationOptOut;
   }
   if (Object.keys(draft).length === 0) {
     throw new PatientValidationError("body");
@@ -91,6 +115,11 @@ function requireDateOfBirth(value: unknown): string {
     throw new PatientValidationError("dateOfBirth");
   }
   return value;
+}
+
+export function isValidPatientEmail(value: string): boolean {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length <= EMAIL_MAX && EMAIL_PATTERN.test(trimmed);
 }
 
 function optionalEmail(value: unknown): string | undefined {

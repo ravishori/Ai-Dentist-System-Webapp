@@ -1,6 +1,6 @@
 /**
  * Application permission keys (TDA-ADR-002 §12).
- * Appointment keys are bound in M4. Notification keys remain deferred.
+ * Notification read is bound in M5. Delivery itself is worker-owned (no human RBAC).
  */
 export const FOUNDATION_PERMISSIONS = [
   "organization.read",
@@ -33,10 +33,16 @@ export const APPOINTMENT_PERMISSIONS = [
 
 export type AppointmentPermission = (typeof APPOINTMENT_PERMISSIONS)[number];
 
+/** Tenant staff may read outbox delivery metadata. Worker processing is not a human permission. */
+export const NOTIFICATION_PERMISSIONS = ["notification.read"] as const;
+
+export type NotificationPermission = (typeof NOTIFICATION_PERMISSIONS)[number];
+
 export const APPLICATION_PERMISSIONS = [
   ...FOUNDATION_PERMISSIONS,
   ...PATIENT_PERMISSIONS,
   ...APPOINTMENT_PERMISSIONS,
+  ...NOTIFICATION_PERMISSIONS,
 ] as const;
 
 export type ApplicationPermission = (typeof APPLICATION_PERMISSIONS)[number];
@@ -55,6 +61,10 @@ export function isPatientPermission(value: string): value is PatientPermission {
 
 export function isAppointmentPermission(value: string): value is AppointmentPermission {
   return (APPOINTMENT_PERMISSIONS as readonly string[]).includes(value);
+}
+
+export function isNotificationPermission(value: string): value is NotificationPermission {
+  return (NOTIFICATION_PERMISSIONS as readonly string[]).includes(value);
 }
 
 export function isApplicationPermission(value: string): value is ApplicationPermission {

@@ -6,10 +6,12 @@ export default function StatusPage() {
         Status: <span className="status">ok</span>
       </p>
       <p>
-        This is the M4 application shell. Public routes remain available. Authentication uses Amazon
+        This is the M5 application shell. Public routes remain available. Authentication uses Amazon
         Cognito User Pools behind AuthenticationPort. Authorization uses application-owned
         organization membership and RBAC. Organization-scoped patient identity and appointments are
-        implemented. Notification product delivery is not implemented in this milestone.
+        implemented. Appointment notification delivery is implemented as a disabled-by-default
+        worker with a fake adapter in tests. Real SMTP remains off until explicit production
+        configuration is present.
       </p>
       <p>
         Process health: <code>/api/health</code>
