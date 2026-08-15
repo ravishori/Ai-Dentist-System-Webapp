@@ -70,9 +70,9 @@ export function SiteHeader() {
                 </button>
               </form>
             ) : auth?.authConfigured ? (
-              <a className="btn btn-primary" href="/api/auth/login">
+              <Link className="btn btn-primary" href="/login">
                 Sign in
-              </a>
+              </Link>
             ) : (
               <Link className="btn btn-secondary" href="/status">
                 Auth unset

@@ -109,8 +109,9 @@ export function AuthGate({
           <>
             <p>
               Authentication is currently <strong>unset</strong> in this environment. Live patient,
-              appointment, and practitioner APIs remain protected and will return 401 until Cognito
-              is provisioned and <code>AUTH_PROVIDER=managed</code>.
+              appointment, and practitioner APIs remain protected and will return 401 until an
+              auth provider is configured (<code>AUTH_PROVIDER=otp</code> or{" "}
+              <code>AUTH_PROVIDER=managed</code>).
             </p>
             <p className="muted" style={{ margin: 0 }}>
               {auth.authMessage ?? "Login is fail-closed by design."}
@@ -128,11 +129,14 @@ export function AuthGate({
           <>
             <p>Sign in to access organization-scoped records for this workspace.</p>
             <div className="hero-actions">
-              <a className="btn btn-primary" href="/api/auth/login">
+              <Link className="btn btn-primary" href="/login">
                 Sign in
-              </a>
-              <Link className="btn btn-ghost" href="/status">
-                System status
+              </Link>
+              <Link className="btn btn-secondary" href="/register/patient">
+                Register as patient
+              </Link>
+              <Link className="btn btn-ghost" href="/register/dentist">
+                Register as dentist
               </Link>
             </div>
           </>

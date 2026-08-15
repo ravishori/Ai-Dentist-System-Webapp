@@ -9,19 +9,19 @@
 
 ## Decisions locked for schema
 
-| Topic | Decision |
-| --- | --- |
-| Patient org binding | P2 — invitation or org-scoped clinic code |
-| Practitioner org binding | R2 — invitation only |
-| Patient ↔ User | Explicit `patient_user_links` (no collapse) |
-| Practitioner ↔ User | Preserve `practitioners.userId` |
-| Operational status | Unchanged: `active` \| `inactive` |
-| Professional verification | Additive `verificationStatus`: `pending` \| `verified` \| `rejected` |
-| Staff-created practitioner | `verificationStatus=verified` (PRACTICE_ADMIN `practitioner.manage` provisioning) |
-| Self-registered practitioner | `verificationStatus=pending` |
-| Roles | No `DENTIST` / `ADMIN` RBAC keys; UI “Dentist” → `PRACTITIONER` |
-| Session | Existing `dc_session` / `auth_sessions.tokenHash`; no client JWT |
-| Cognito | Retained as `AUTH_PROVIDER=managed`; OTP is `AUTH_PROVIDER=otp` |
+| Topic                        | Decision                                                                          |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| Patient org binding          | P2 — invitation or org-scoped clinic code                                         |
+| Practitioner org binding     | R2 — invitation only                                                              |
+| Patient ↔ User              | Explicit `patient_user_links` (no collapse)                                       |
+| Practitioner ↔ User         | Preserve `practitioners.userId`                                                   |
+| Operational status           | Unchanged: `active` \| `inactive`                                                 |
+| Professional verification    | Additive `verificationStatus`: `pending` \| `verified` \| `rejected`              |
+| Staff-created practitioner   | `verificationStatus=verified` (PRACTICE_ADMIN `practitioner.manage` provisioning) |
+| Self-registered practitioner | `verificationStatus=pending`                                                      |
+| Roles                        | No `DENTIST` / `ADMIN` RBAC keys; UI “Dentist” → `PRACTITIONER`                   |
+| Session                      | Existing `dc_session` / `auth_sessions.tokenHash`; no client JWT                  |
+| Cognito                      | Retained as `AUTH_PROVIDER=managed`; OTP is `AUTH_PROVIDER=otp`                   |
 
 ### Staff-created verification rationale
 
@@ -33,15 +33,15 @@ M7 create requires `practitioner.manage` (seeded only to `PRACTICE_ADMIN`), link
 
 ### `users`
 
-| Change | Notes |
-| --- | --- |
-| `phone` `String?` `@unique` | Normalized E.164; multiple NULLs allowed |
-| `phoneVerified` `Boolean` `@default(false)` | Parallel to `emailVerified` |
+| Change                                      | Notes                                    |
+| ------------------------------------------- | ---------------------------------------- |
+| `phone` `String?` `@unique`                 | Normalized E.164; multiple NULLs allowed |
+| `phoneVerified` `Boolean` `@default(false)` | Parallel to `emailVerified`              |
 
 ### `practitioners`
 
-| Change | Notes |
-| --- | --- |
+| Change                                              | Notes                          |
+| --------------------------------------------------- | ------------------------------ |
 | `verificationStatus` `String` `@default("pending")` | Backfill existing → `verified` |
 
 ### `addresses`
@@ -54,12 +54,12 @@ Association tables with `isPrimary`. Ownership stays on Patient/Practitioner—n
 
 ### `patient_user_links`
 
-| Constraint | Purpose |
-| --- | --- |
-| `@@unique([patientId])` | One portal user per patient |
+| Constraint                           | Purpose                              |
+| ------------------------------------ | ------------------------------------ |
+| `@@unique([patientId])`              | One portal user per patient          |
 | `@@unique([organizationId, userId])` | One patient link per user per tenant |
-| `organizationId` FK | Tenant isolation |
-| `linkedByUserId?` | Audit |
+| `organizationId` FK                  | Tenant isolation                     |
+| `linkedByUserId?`                    | Audit                                |
 
 No silent email/phone match linking.
 
@@ -87,14 +87,14 @@ Durable counters keyed by hashed bucket (destination / IP / invite / registratio
 
 ## Permission keys (existing naming convention)
 
-| Key | PRACTICE_ADMIN | STAFF | Others |
-| --- | --- | --- | --- |
-| `invitation.patient.create` | Yes | Yes | No |
-| `invitation.practitioner.create` | Yes | No | No |
-| `invitation.revoke` | Yes | Yes* | No |
-| `clinic_code.manage` | Yes | No | No |
-| `practitioner.verify` | Yes | No | No |
-| `patient.link_user` | Yes | Yes | No |
+| Key                              | PRACTICE_ADMIN | STAFF | Others |
+| -------------------------------- | -------------- | ----- | ------ |
+| `invitation.patient.create`      | Yes            | Yes   | No     |
+| `invitation.practitioner.create` | Yes            | No    | No     |
+| `invitation.revoke`              | Yes            | Yes\* | No     |
+| `clinic_code.manage`             | Yes            | No    | No     |
+| `practitioner.verify`            | Yes            | No    | No     |
+| `patient.link_user`              | Yes            | Yes   | No     |
 
 \*STAFF may revoke **patient** invitations only (enforced in application, not catalog).
 
@@ -115,18 +115,18 @@ Durable counters keyed by hashed bucket (destination / IP / invite / registratio
 
 Cognito (`managed`) must not be removed until all are true:
 
-1. Existing Cognito users migrated or explicitly handled  
-2. OTP authentication at production parity  
-3. Authentication security review passed  
-4. Passwordless registration works  
-5. Passwordless login works  
-6. Session behavior equivalent  
-7. RBAC equivalent  
-8. Tenant isolation equivalent  
-9. Production OTP delivery reliable  
-10. Rollback strategy exists  
-11. Monitoring exists  
-12. No required production user depends exclusively on Cognito  
+1. Existing Cognito users migrated or explicitly handled
+2. OTP authentication at production parity
+3. Authentication security review passed
+4. Passwordless registration works
+5. Passwordless login works
+6. Session behavior equivalent
+7. RBAC equivalent
+8. Tenant isolation equivalent
+9. Production OTP delivery reliable
+10. Rollback strategy exists
+11. Monitoring exists
+12. No required production user depends exclusively on Cognito
 
 Removal is a separate deliberate change.
 
@@ -134,9 +134,9 @@ Removal is a separate deliberate change.
 
 ## Explicit non-goals in this schema pass
 
-- Production SMS vendor  
-- Client JWT sessions  
-- Collapsing Patient into User  
-- Auto branch assignment on practitioner self-reg  
-- Licensing/document verification vendors  
-- Silent Cognito↔OTP account merge by email/phone alone  
+- Production SMS vendor
+- Client JWT sessions
+- Collapsing Patient into User
+- Auto branch assignment on practitioner self-reg
+- Licensing/document verification vendors
+- Silent Cognito↔OTP account merge by email/phone alone

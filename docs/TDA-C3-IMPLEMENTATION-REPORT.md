@@ -9,14 +9,14 @@
 
 ## Architecture
 
-| Decision | Implementation |
-| --- | --- |
-| Auth providers | `unset` \| `managed` (Cognito) \| `otp` |
-| Session | Opaque `dc_session` / `auth_sessions.tokenHash` — **no JWT** |
-| OTP hashing | HMAC-SHA256(`OTP_PEPPER`, `salt:otp`) + per-challenge salt |
-| SMS | `SmsDeliveryPort` + fake / fail-closed adapters only |
-| Email OTP | Reuses `NotificationDeliveryPort` |
-| Cognito | Retained; deprecation criteria documented |
+| Decision       | Implementation                                               |
+| -------------- | ------------------------------------------------------------ |
+| Auth providers | `unset` \| `managed` (Cognito) \| `otp`                      |
+| Session        | Opaque `dc_session` / `auth_sessions.tokenHash` — **no JWT** |
+| OTP hashing    | HMAC-SHA256(`OTP_PEPPER`, `salt:otp`) + per-challenge salt   |
+| SMS            | `SmsDeliveryPort` + fake / fail-closed adapters only         |
+| Email OTP      | Reuses `NotificationDeliveryPort`                            |
+| Cognito        | Retained; deprecation criteria documented                    |
 
 ### AuthenticationPort
 
@@ -38,14 +38,14 @@
 
 ### Permissions
 
-| Key | PRACTICE_ADMIN | STAFF |
-| --- | --- | --- |
-| invitation.patient.create | Yes | Yes |
-| invitation.practitioner.create | Yes | No |
-| invitation.revoke | Yes | Yes (patient purpose enforced in service) |
-| clinic_code.manage | Yes | No |
-| practitioner.verify | Yes | No |
-| patient.link_user | Yes | Yes |
+| Key                            | PRACTICE_ADMIN | STAFF                                     |
+| ------------------------------ | -------------- | ----------------------------------------- |
+| invitation.patient.create      | Yes            | Yes                                       |
+| invitation.practitioner.create | Yes            | No                                        |
+| invitation.revoke              | Yes            | Yes (patient purpose enforced in service) |
+| clinic_code.manage             | Yes            | No                                        |
+| practitioner.verify            | Yes            | No                                        |
+| patient.link_user              | Yes            | Yes                                       |
 
 ---
 
@@ -69,15 +69,15 @@ Additive only; existing practitioners backfilled to `verificationStatus=verified
 
 Follow existing `/api/auth/*` style; do not duplicate login/callback/logout/session:
 
-| Capability | Suggested path |
-| --- | --- |
-| Redeem invitation | `POST /api/auth/register/invitation` |
-| Redeem clinic code | `POST /api/auth/register/clinic-code` |
-| Request OTP | `POST /api/auth/otp/request` |
-| Verify OTP | `POST /api/auth/otp/verify` |
-| Complete registration | `POST /api/auth/register/complete` |
-| Passwordless login OTP | same otp request/verify with LOGIN_* purpose |
-| Practitioner verify | `PATCH /api/organizations/:orgId/practitioners/:id/verification` |
+| Capability             | Suggested path                                                   |
+| ---------------------- | ---------------------------------------------------------------- |
+| Redeem invitation      | `POST /api/auth/register/invitation`                             |
+| Redeem clinic code     | `POST /api/auth/register/clinic-code`                            |
+| Request OTP            | `POST /api/auth/otp/request`                                     |
+| Verify OTP             | `POST /api/auth/otp/verify`                                      |
+| Complete registration  | `POST /api/auth/register/complete`                               |
+| Passwordless login OTP | same otp request/verify with LOGIN\_\* purpose                   |
+| Practitioner verify    | `PATCH /api/organizations/:orgId/practitioners/:id/verification` |
 
 ---
 
@@ -91,7 +91,7 @@ Follow existing `/api/auth/*` style; do not duplicate login/callback/logout/sess
 - OtpAuthenticationAdapter + Cognito coexistence
 - Practitioner `verificationStatus` + self-verify denial
 - SmsDeliveryPort fake/fail-closed
-- Config `AUTH_PROVIDER=otp` + OTP_* env
+- Config `AUTH_PROVIDER=otp` + OTP\_\* env
 - Security + migration tests; M7 regression green
 
 ## NOT YET IMPLEMENTED
