@@ -17,7 +17,7 @@ test("health endpoint returns ok without business payload", async ({ request }) 
   expect(body).toMatchObject({
     status: "ok",
     service: "web",
-    milestone: "M5",
+    milestone: "M6",
   });
 });
 
@@ -42,6 +42,16 @@ test("patient API denies unauthenticated access", async ({ request }) => {
 test("appointment API denies unauthenticated access", async ({ request }) => {
   const response = await request.get("/api/appointments", {
     headers: { "x-organization-id": "org_untrusted" },
+  });
+  expect(response.status()).toBe(401);
+  const body = (await response.json()) as { error?: string };
+  expect(body.error).toBe("unauthenticated");
+});
+
+test("appointment confirm API denies unauthenticated access", async ({ request }) => {
+  const response = await request.post("/api/appointments/appt_untrusted/confirm", {
+    headers: { "x-organization-id": "org_untrusted" },
+    data: {},
   });
   expect(response.status()).toBe(401);
   const body = (await response.json()) as { error?: string };
