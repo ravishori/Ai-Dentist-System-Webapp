@@ -1,8 +1,7 @@
 # C3 Phase 6 — Staging validation (PostgreSQL + browser OTP)
 
-**Date:** 2026-08-15  
+**Date:** 2026-08-15 (initial) / **re-audit 2026-08-16**  
 **Branch:** `cursor/c3-identity-otp-registration-0d79`  
-**HEAD at audit:** `7ead3f118643eec7bef37313968a7619fd5347ae`  
 **PR #9:** https://github.com/ravishori/Ai-Dentist-System-Webapp/pull/9  
 **PR #8:** untouched  
 
@@ -10,7 +9,7 @@
 
 **C3 NOT STAGING READY — BLOCKED**
 
-Blocked at **PHASE 6.1**: no safely connectable PostgreSQL target in this agent environment.
+Blocked at **PHASE 6.1**: no safely connectable PostgreSQL target visible to this agent process.
 
 No migrations were applied. No Prisma-backed browser OTP E2E was executed. Application code was not changed to work around the block.
 
@@ -18,30 +17,30 @@ No migrations were applied. No Prisma-backed browser OTP E2E was executed. Appli
 
 ## Phase 6.1 — Environment audit (no secret values)
 
+### Re-audit 2026-08-16 (after operator reported vars configured)
+
 | Item | Status |
 | --- | --- |
-| Branch / HEAD | Correct C3 branch @ `7ead3f1` |
-| Cursor linked environment | **None** (`environment: null`) |
-| Docker | **Absent** (no `docker`, no docker.sock) |
-| `psql` / `pg_isready` | Absent |
+| Branch | `cursor/c3-identity-otp-registration-0d79` |
+| Cursor linked environment | **None** (`environment: null`) — dashboard secrets cannot attach to this run |
+| Docker | **Absent** |
+| `psql` | Absent |
 | Listener on `:5432` | **None** |
-| `DATABASE_URL` | Present, parseable, **loopback**, **placeholder-like** |
+| `DATABASE_URL` | Present but **identical to `.env.example` placeholder** |
 | TCP to DB host | **ECONNREFUSED** |
-| Prisma `$queryRaw` | Skipped (TCP unreachable) |
-| `AUTH_PROVIDER` (shell) | unset |
-| OTP_ISSUER / OTP_PEPPER / AUTH_SESSION_SECRET | Present in env (values not printed) |
-| `SMS_PROVIDER` | unset (correct — no production SMS) |
-| Render Blueprint | In-repo (`render.yaml`) — **NOT DEPLOYED** per file header |
-| Preferred options A–D | **None available** in this pod |
+| Prisma connect | Skipped (TCP unreachable) |
+| `AUTH_PROVIDER` | **unconfigured** in this process |
+| `OTP_ISSUER` / `OTP_PEPPER` / `AUTH_SESSION_SECRET` | **unconfigured** |
+| `SMS_PROVIDER` / `OTP_ALLOW_FAKE_SMS` | **unconfigured** |
+| `APP_BASE_URL` | **unconfigured** |
+| Render Blueprint | In-repo — **NOT DEPLOYED** |
 
 ### Database identity decision
 
-Cannot establish a safe non-production connectable database.
+Cannot establish a safe non-production connectable database in **this** agent.
 
-- Option A (dedicated staging): not reachable / not linked  
-- Option B (ephemeral dedicated): not provisioned  
-- Option C (local PostgreSQL): no listener  
-- Option D (Docker PostgreSQL): Docker unavailable  
+- Configured elsewhere (dashboard / Render / local machine) does **not** appear in this pod’s process environment.
+- Placeholder loopback URL is not a valid staging target.
 
 **STOP** — do not migrate; do not invent a database; do not use production.
 
@@ -49,44 +48,46 @@ Cannot establish a safe non-production connectable database.
 
 ## DATABASE VALIDATION BLOCKED
 
-### Required
+### Required in the **same** Cloud Agent process that runs Phase 6
 
-| Requirement | Detail |
-| --- | --- |
-| Environment variable | `DATABASE_URL` pointing at a **dedicated test/staging** PostgreSQL (not production) |
-| Access | Network reachability from the validation host + valid credentials |
-| Safety | Operator must confirm DB is test/dev/dedicated staging before migrate |
-| Auth for browser OTP | `AUTH_PROVIDER=otp` plus OTP_* / `AUTH_SESSION_SECRET`; `SMS_PROVIDER=fake` and `OTP_ALLOW_FAKE_SMS=true` **only** in non-production |
+| Variable | Required for Phase 6 | Seen in this agent |
+| --- | --- | --- |
+| `DATABASE_URL` | Dedicated **test/staging** Postgres (reachable, non-placeholder) | Placeholder only |
+| `AUTH_PROVIDER=otp` | Browser OTP E2E | Missing |
+| `OTP_ISSUER` | OTP runtime | Missing |
+| `OTP_PEPPER` (≥32 chars) | OTP hashing | Missing |
+| `AUTH_SESSION_SECRET` (≥32 chars) | `dc_session` | Missing |
+| `SMS_PROVIDER=fake` | Non-prod test SMS only | Missing |
+| `OTP_ALLOW_FAKE_SMS=true` | Non-prod only | Missing |
+| `APP_BASE_URL` | Cookie / redirects | Missing |
 
-### Operator commands (after a connectable non-prod DB is available)
+### How to unblock (operator)
+
+1. Create or link a **Cursor Cloud Agent environment** for this repo (this run currently has `environment: null`).
+2. Inject the variables above as **environment secrets** (not only GitHub Actions secrets — this agent cannot read those).
+3. Ensure `DATABASE_URL` points at a **dedicated staging/test** Postgres that is network-reachable from Cloud Agents (not `localhost`, not production, not the `.env.example` placeholder).
+4. **Start a new agent** (or rebuild) so secrets are present in the process environment — editing secrets does not retrofit an already-running pod without a linked environment.
+5. Re-run Phase 6 with the same validation-only prompt.
+
+### Operator commands (after a connectable non-prod DB is available **in the agent**)
 
 ```bash
-# 1) Confirm identity (operator judgment — staging/test only)
-# 2) Validate schema package
+# Confirm vars are present (names only)
+node -e 'for (const k of ["DATABASE_URL","AUTH_PROVIDER","OTP_ISSUER","OTP_PEPPER","AUTH_SESSION_SECRET","SMS_PROVIDER","OTP_ALLOW_FAKE_SMS","APP_BASE_URL"]) console.log(k, process.env[k]?"configured":"MISSING")'
+
 pnpm db:validate
+pnpm db:migrate   # prisma migrate deploy — non-destructive
 
-# 3) Apply migrations (non-destructive deploy — does not reset/drop)
-pnpm db:migrate
-# equivalent: pnpm --filter @dentalcare/db exec prisma migrate deploy --schema prisma/schema.prisma
+# Expect migration: 20260815220000_c3_otp_identity_registration
 
-# 4) Confirm C3 migration present
-# Expect: 20260815220000_c3_otp_identity_registration
-
-# 5) Start web with OTP test adapter (non-prod only)
-# AUTH_PROVIDER=otp
-# SMS_PROVIDER=fake
-# OTP_ALLOW_FAKE_SMS=true
-# (plus OTP_ISSUER, OTP_PEPPER, AUTH_SESSION_SECRET, APP_BASE_URL, DATABASE_URL)
-
-# 6) Run Playwright against real app+DB (not in-process mocks)
+# Then real browser E2E against app+DB (AUTH_PROVIDER=otp, fake SMS non-prod only)
 pnpm test:e2e
-# plus any dedicated Prisma-backed OTP browser specs once DB is live
 ```
 
 ### Expected validation result when unblocked
 
 - Migration `20260815220000_c3_otp_identity_registration` applied  
-- Browser → HTTP → OTP → Prisma → PostgreSQL → `dc_session` green for patient, practitioner, login/logout  
+- Browser → HTTP → OTP → Prisma → PostgreSQL → `dc_session` green  
 - Then re-evaluate **C3 STAGING READY** only if all Phase 6 success criteria pass  
 
 ---
@@ -100,6 +101,7 @@ pnpm test:e2e
 - No Cognito migration  
 - No PR #8 changes  
 - No fabricated staging success  
+- No local Postgres invent/install to bypass missing staging DB  
 
 ---
 
@@ -107,7 +109,8 @@ pnpm test:e2e
 
 | Dependency | Status |
 | --- | --- |
-| Connectable staging/test Postgres | **Blocking Phase 6** |
+| Connectable staging/test Postgres **visible to this agent** | **Blocking Phase 6** |
+| Cursor linked environment + injected secrets | **Blocking Phase 6** |
 | Production SMS | Separate milestone |
 | Cognito migration | Separate milestone |
 | Production monitoring/rollback | Separate milestone |
@@ -118,4 +121,4 @@ pnpm test:e2e
 
 **C3 NOT STAGING READY — BLOCKED**
 
-C3 remains **DEVELOPMENT COMPLETE** with **STAGING VALIDATION PENDING** until a dedicated connectable PostgreSQL environment is provided and Phase 6 browser OTP flows are re-run for real.
+C3 remains **DEVELOPMENT COMPLETE** with **STAGING VALIDATION PENDING** until a dedicated connectable PostgreSQL environment and OTP test vars are present **in the validating agent process**, and Phase 6 browser OTP flows are re-run for real.
