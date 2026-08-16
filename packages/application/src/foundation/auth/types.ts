@@ -77,4 +77,15 @@ export interface UserIdentityDirectory {
     email?: string;
     emailVerified?: boolean;
   }): Promise<IdentityRecord>;
+  /**
+   * Bind an identity to an existing application user (OTP registration).
+   * Cognito adapter does not require this; OTP registration uses it to avoid duplicate users.
+   */
+  linkIdentity?(input: {
+    userId: string;
+    issuer: string;
+    subject: string;
+    email?: string;
+    emailVerified?: boolean;
+  }): Promise<IdentityRecord>;
 }

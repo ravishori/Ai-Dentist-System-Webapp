@@ -15,11 +15,14 @@ export default function LandingPage() {
             lifecycle appointments, and organization-scoped records.
           </p>
           <div className="hero-actions">
-            <Link className="btn btn-primary" href="/dashboard">
-              Enter workspace
+            <Link className="btn btn-primary" href="/login">
+              Sign in
             </Link>
-            <Link className="btn btn-secondary" href="/status">
-              System status
+            <Link className="btn btn-secondary" href="/register/patient">
+              Register as patient
+            </Link>
+            <Link className="btn btn-ghost" href="/register/dentist">
+              Register as dentist
             </Link>
           </div>
         </div>

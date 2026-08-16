@@ -6,10 +6,22 @@ export function isPractitionerStatus(value: string): value is PractitionerStatus
   return (PRACTITIONER_STATUSES as readonly string[]).includes(value);
 }
 
+/** Professional verification gate (TDA-ADR-004). Separate from operational `status`. */
+export const PRACTITIONER_VERIFICATION_STATUSES = ["pending", "verified", "rejected"] as const;
+
+export type PractitionerVerificationStatus = (typeof PRACTITIONER_VERIFICATION_STATUSES)[number];
+
+export function isPractitionerVerificationStatus(
+  value: string,
+): value is PractitionerVerificationStatus {
+  return (PRACTITIONER_VERIFICATION_STATUSES as readonly string[]).includes(value);
+}
+
 /**
- * Organization-scoped practitioner profile (M4-01 / M7-01).
+ * Organization-scoped practitioner profile (M4-01 / M7-01 / C3).
  * Linked to an Application User. Not a Cognito subject.
  * No unlink, user replacement, or hard delete.
+ * `status` = operational eligibility; `verificationStatus` = professional gate.
  */
 export interface Practitioner {
   readonly id: string;
@@ -17,6 +29,7 @@ export interface Practitioner {
   readonly userId: string;
   readonly displayName?: string;
   readonly status: PractitionerStatus;
+  readonly verificationStatus: PractitionerVerificationStatus;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -24,6 +37,11 @@ export interface Practitioner {
 export interface PractitionerCreateInput {
   readonly userId: string;
   readonly displayName?: string;
+  /**
+   * Professional verification. Staff-managed create defaults to `verified`.
+   * Self-registration must pass `pending` explicitly (TDA-ADR-004).
+   */
+  readonly verificationStatus?: PractitionerVerificationStatus;
 }
 
 export interface PractitionerUpdateInput {

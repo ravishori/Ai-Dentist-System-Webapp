@@ -32,6 +32,7 @@ export {
   APPOINTMENT_PERMISSIONS,
   NOTIFICATION_PERMISSIONS,
   PRACTITIONER_PERMISSIONS,
+  IDENTITY_PERMISSIONS,
   APPLICATION_PERMISSIONS,
   PLATFORM_PERMISSIONS,
   isFoundationPermission,
@@ -39,6 +40,7 @@ export {
   isAppointmentPermission,
   isNotificationPermission,
   isPractitionerPermission,
+  isIdentityPermission,
   isApplicationPermission,
   isPlatformPermission,
   type FoundationPermission,
@@ -46,9 +48,51 @@ export {
   type AppointmentPermission,
   type NotificationPermission,
   type PractitionerPermission,
+  type IdentityPermission,
   type ApplicationPermission,
   type PlatformPermission,
 } from "./permissions.js";
+export {
+  ADDRESS_TYPES,
+  isAddressType,
+  type AddressType,
+  type Address,
+  type AddressCreateInput,
+} from "./address.js";
+export {
+  INVITATION_PURPOSES,
+  INVITATION_STATUSES,
+  CLINIC_CODE_STATUSES,
+  isInvitationPurpose,
+  isInvitationStatus,
+  isClinicCodeStatus,
+  type InvitationPurpose,
+  type InvitationStatus,
+  type OrganizationInvitation,
+  type ClinicCodeStatus,
+  type ClinicCode,
+} from "./invitation.js";
+export {
+  OTP_DESTINATION_TYPES,
+  OTP_PURPOSES,
+  REGISTRATION_SESSION_STATUSES,
+  isOtpDestinationType,
+  isOtpPurpose,
+  isRegistrationSessionStatus,
+  type OtpDestinationType,
+  type OtpPurpose,
+  type AuthOtpChallenge,
+  type RegistrationSessionStatus,
+  type RegistrationSession,
+  type AddressDraft,
+} from "./otp.js";
+export { type PatientUserLink } from "./patient-user-link.js";
+export {
+  type SmsDeliveryOutcome,
+  type SmsMessage,
+  type SmsDeliveryResult,
+  type SmsDeliveryPort,
+} from "./sms-delivery-port.js";
 export {
   TENANT_ROLE_KEYS,
   PLATFORM_ROLE_KEYS,

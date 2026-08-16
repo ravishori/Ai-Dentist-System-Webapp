@@ -5,6 +5,7 @@ export {
   unsetAuthentication,
   createAuthenticationPort,
   oidcConfigFromApp,
+  otpConfigFromApp,
   handleLoginGet,
   handleCallbackGet,
   handleLogoutPost,

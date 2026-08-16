@@ -75,6 +75,45 @@ describe("createLogger", () => {
   });
 });
 
+describe("otp authentication configuration", () => {
+  it("requires OTP settings when AUTH_PROVIDER=otp", () => {
+    expect(() =>
+      loadConfig({
+        ...validEnv,
+        AUTH_PROVIDER: "otp",
+      }),
+    ).toThrow(ConfigurationError);
+  });
+
+  it("loads otp configuration in test with fake SMS", () => {
+    const config = loadConfig({
+      ...validEnv,
+      AUTH_PROVIDER: "otp",
+      OTP_ISSUER: "https://auth.example.test/otp",
+      OTP_PEPPER: "test-otp-pepper-which-is-at-least-32b!!",
+      AUTH_SESSION_SECRET: "test-session-secret-which-is-32b-min",
+      SMS_PROVIDER: "fake",
+    });
+    expect(config.AUTH_PROVIDER).toBe("otp");
+    expect(config.OTP_LENGTH).toBe(6);
+  });
+
+  it("rejects production otp with fake SMS", () => {
+    expect(() =>
+      loadConfig({
+        ...validEnv,
+        NODE_ENV: "production",
+        AUTH_PROVIDER: "otp",
+        OTP_ISSUER: "https://auth.example.test/otp",
+        OTP_PEPPER: "test-otp-pepper-which-is-at-least-32b!!",
+        AUTH_SESSION_SECRET: "test-session-secret-which-is-32b-min",
+        SMS_PROVIDER: "fake",
+        OTP_ALLOW_FAKE_SMS: "true",
+      }),
+    ).toThrow(ConfigurationError);
+  });
+});
+
 describe("managed authentication configuration", () => {
   it("requires OIDC settings when AUTH_PROVIDER=managed", () => {
     expect(() =>

@@ -55,12 +55,21 @@ export const PRACTITIONER_PERMISSIONS = [
 
 export type PractitionerPermission = (typeof PRACTITIONER_PERMISSIONS)[number];
 
+export {
+  IDENTITY_PERMISSIONS,
+  isIdentityPermission,
+  type IdentityPermission,
+} from "./identity-permissions.js";
+
+import { IDENTITY_PERMISSIONS } from "./identity-permissions.js";
+
 export const APPLICATION_PERMISSIONS = [
   ...FOUNDATION_PERMISSIONS,
   ...PATIENT_PERMISSIONS,
   ...APPOINTMENT_PERMISSIONS,
   ...NOTIFICATION_PERMISSIONS,
   ...PRACTITIONER_PERMISSIONS,
+  ...IDENTITY_PERMISSIONS,
 ] as const;
 
 export type ApplicationPermission = (typeof APPLICATION_PERMISSIONS)[number];

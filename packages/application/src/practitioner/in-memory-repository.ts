@@ -13,6 +13,7 @@ import {
   type PractitionerUnavailability,
   type PractitionerUnavailabilityCreateInput,
   type PractitionerUpdateInput,
+  type PractitionerVerificationStatus,
   type PractitionerWriteContext,
   type PractitionerHistoryEvent,
   type WeeklyWorkingInterval,
@@ -125,6 +126,29 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
       });
       this.records.set(practitioner.id, practitioner);
       return practitioner;
+    });
+  }
+
+  async setVerificationStatus(
+    context: PractitionerWriteContext,
+    practitionerId: string,
+    verificationStatus: PractitionerVerificationStatus,
+  ): Promise<Practitioner> {
+    return this.exclusive(async () => {
+      const existing = await this.require(context.organizationId, practitionerId);
+      const updated: Practitioner = {
+        ...existing,
+        verificationStatus,
+        updatedAt: new Date().toISOString(),
+      };
+      this.commitSideEffects({
+        practitioner: updated,
+        actorUserId: context.actorUserId,
+        eventType: "verification_updated",
+        auditAction: "practitioner.verify",
+      });
+      this.records.set(updated.id, updated);
+      return updated;
     });
   }
 
@@ -487,6 +511,7 @@ export class InMemoryPractitionerRepository implements PractitionerManagementRep
       userId: input.userId,
       displayName: input.displayName,
       status: "active",
+      verificationStatus: input.verificationStatus ?? "verified",
       createdAt: now,
       updatedAt: now,
     };

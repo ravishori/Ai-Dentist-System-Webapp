@@ -5,15 +5,18 @@
 | **ADR ID**           | TDA-ADR-002                                                                                                                                    |
 | **Title**            | Identity, Authentication, Authorization & Tenant Model                                                                                         |
 | **Version**          | 1.0                                                                                                                                            |
-| **Status**           | PROPOSED — READY FOR HUMAN APPROVAL                                                                                                            |
+| **Status**           | PROPOSED — READY FOR HUMAN APPROVAL — **partially superseded by TDA-ADR-004 (2026-08-15) for passwordless OTP IdP & invite self-registration** |
 | **Date**             | 14 August 2026                                                                                                                                 |
 | **Repository**       | `ravishori/Ai-Dentist-System-webapp`                                                                                                           |
 | **Change class**     | C3 (security boundary / major architecture) per TDA-GOV-CMP-001                                                                                |
 | **Primary sources**  | TDA-SEC-001, TDA-DDD-001-D01, TDA-FRS-001 (IAM-FR-\*), TDA-PRD-BRD-001 (BRD-014/015), TDA-API-001, TDA-IMP-M1-001, TDA-IMP-M0-002, TDA-ADR-001 |
 | **Does not select**  | A named authentication vendor                                                                                                                  |
 | **Related open ADR** | TDA-SEC-001 ADR-SEC-001 — exact authentication provider/mechanism (to be recorded as TDA-ADR-003 when selected)                                |
+| **Supersession**     | Historical text retained. Conflicting “provider-owned credentials only / no app-managed auth account” clauses for human login are superseded by **TDA-ADR-004** (app-owned OTP + Cognito coexistence). Tenant/RBAC/Membership ownership in this ADR remains authoritative. |
 
 AI-generated documentation is non-authoritative until reviewed and approved (TDA-GOV-SOT-001 §16, TDA-GOV-CMP-001 §14). Cursor must not self-approve this decision.
+
+> **Supersession notice (TDA-ADR-004):** Application-managed passwordless email/SMS OTP is the preferred C3 human authentication path. Cognito remains a selectable `AuthenticationPort` adapter. Server-side `dc_session`, Organization tenancy, and application RBAC from this ADR are preserved.
 
 ---
 

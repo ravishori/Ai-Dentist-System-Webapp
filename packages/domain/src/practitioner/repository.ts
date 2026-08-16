@@ -9,6 +9,7 @@ import type {
   PractitionerUnavailability,
   PractitionerUnavailabilityCreateInput,
   PractitionerUpdateInput,
+  PractitionerVerificationStatus,
 } from "./practitioner.js";
 import type { PractitionerHistoryEvent } from "./history.js";
 
@@ -50,6 +51,11 @@ export interface PractitionerManagementRepository extends PractitionerRepository
   createWithAudit(
     context: PractitionerWriteContext,
     input: PractitionerCreateInput,
+  ): Promise<Practitioner>;
+  setVerificationStatus(
+    context: PractitionerWriteContext,
+    practitionerId: string,
+    verificationStatus: PractitionerVerificationStatus,
   ): Promise<Practitioner>;
   assignBranch(
     context: PractitionerWriteContext,

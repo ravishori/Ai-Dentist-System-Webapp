@@ -1,6 +1,6 @@
 export { CognitoOidcAuthenticationAdapter } from "./cognito-oidc-adapter.js";
 export { UnsetAuthenticationPort, unsetAuthentication } from "./unset-adapter.js";
-export { createAuthenticationPort, oidcConfigFromApp } from "./create-authentication.js";
+export { createAuthenticationPort, oidcConfigFromApp, otpConfigFromApp } from "./create-authentication.js";
 export { handleLoginGet, handleCallbackGet, handleLogoutPost, handleSessionGet } from "./http.js";
 export {
   InMemoryLoginTransactionStore,

@@ -10,12 +10,18 @@ import {
 
 let port: AuthenticationPort | undefined;
 
+/**
+ * AuthenticationPort for the web runtime (TDA-ADR-004).
+ * AUTH_PROVIDER=unset → fail-closed
+ * AUTH_PROVIDER=managed → Cognito OIDC
+ * AUTH_PROVIDER=otp → OtpAuthenticationAdapter + dc_session
+ */
 export function getAuthenticationPort(): AuthenticationPort {
   if (port) {
     return port;
   }
   const config = loadConfig();
-  if (config.AUTH_PROVIDER !== "managed") {
+  if (config.AUTH_PROVIDER === "unset") {
     port = unsetAuthentication;
     return port;
   }

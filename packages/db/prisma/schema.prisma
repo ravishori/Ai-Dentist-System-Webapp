@@ -9,6 +9,7 @@
 // M4: organization-scoped appointments and minimum practitioner profiles.
 // M5: appointment-notification consent and outbox delivery metadata.
 // M7: practitioner status, branch assignment, weekly hours, and dated unavailability.
+// C3: passwordless OTP identity, invitations, patient↔user link, address, verificationStatus.
 
 generator client {
   provider = "prisma-client-js"
@@ -23,6 +24,8 @@ model User {
   id            String             @id @default(cuid())
   email         String?
   emailVerified Boolean            @default(false)
+  phone         String?            @unique
+  phoneVerified Boolean            @default(false)
   status        String             @default("active")
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
@@ -31,6 +34,11 @@ model User {
   memberships   Membership[]
   platformRoles UserPlatformRole[]
   practitioners Practitioner[]
+  patientLinks  PatientUserLink[]  @relation("PatientUserLinkUser")
+  linkedPatients PatientUserLink[] @relation("PatientUserLinkActor")
+  invitationsCreated OrganizationInvitation[] @relation("InvitationCreator")
+  invitationsRedeemed OrganizationInvitation[] @relation("InvitationRedeemer")
+  clinicCodesCreated ClinicCode[] @relation("ClinicCodeCreator")
 
   @@map("users")
 }
@@ -94,6 +102,10 @@ model Organization {
   practitionerSchedules   PractitionerSchedule[]
   practitionerUnavailability PractitionerUnavailability[]
   practitionerHistory     PractitionerHistory[]
+  invitations   OrganizationInvitation[]
+  clinicCodes   ClinicCode[]
+  registrationSessions RegistrationSession[]
+  patientUserLinks PatientUserLink[]
 
   @@map("organizations")
 }
@@ -219,6 +231,8 @@ model Patient {
   updatedAt                         DateTime  @updatedAt
   organization                      Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   appointments                      Appointment[]
+  userLink                          PatientUserLink?
+  addresses                         PatientAddress[]
 
   @@index([organizationId])
   @@map("patients")
@@ -230,6 +244,7 @@ model Practitioner {
   userId         String       @unique
   displayName    String?
   status         String       @default("active")
+  verificationStatus String   @default("pending")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
@@ -239,8 +254,10 @@ model Practitioner {
   schedules      PractitionerSchedule[]
   unavailability PractitionerUnavailability[]
   history        PractitionerHistory[]
+  addresses      PractitionerAddress[]
 
   @@index([organizationId])
+  @@index([organizationId, verificationStatus])
   @@map("practitioners")
 }
 
@@ -392,4 +409,182 @@ model NotificationOutbox {
   @@index([status, createdAt])
   @@index([organizationId, status])
   @@map("notification_outbox")
+}
+
+// --- C3 passwordless OTP identity & registration (TDA-ADR-004) ---
+
+model Address {
+  id         String   @id @default(cuid())
+  line1      String
+  line2      String?
+  city       String
+  state      String?
+  postalCode String
+  country    String
+  type       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  patients   PatientAddress[]
+  practitioners PractitionerAddress[]
+
+  @@map("addresses")
+}
+
+model PatientAddress {
+  patientId  String
+  addressId  String
+  isPrimary  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  address    Address  @relation(fields: [addressId], references: [id], onDelete: Restrict)
+
+  @@id([patientId, addressId])
+  @@index([addressId])
+  @@map("patient_addresses")
+}
+
+model PractitionerAddress {
+  practitionerId String
+  addressId      String
+  isPrimary      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  practitioner   Practitioner @relation(fields: [practitionerId], references: [id], onDelete: Restrict)
+  address        Address      @relation(fields: [addressId], references: [id], onDelete: Restrict)
+
+  @@id([practitionerId, addressId])
+  @@index([addressId])
+  @@map("practitioner_addresses")
+}
+
+model PatientUserLink {
+  id             String   @id @default(cuid())
+  organizationId String
+  patientId      String   @unique
+  userId         String
+  linkedAt       DateTime @default(now())
+  linkedByUserId String?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  patient        Patient      @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  user           User         @relation("PatientUserLinkUser", fields: [userId], references: [id], onDelete: Restrict)
+  linkedBy       User?        @relation("PatientUserLinkActor", fields: [linkedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("patient_user_links")
+}
+
+model OrganizationInvitation {
+  id               String   @id @default(cuid())
+  organizationId   String
+  purpose          String
+  tokenHash        String   @unique
+  emailHint        String?
+  status           String   @default("PENDING")
+  expiresAt        DateTime
+  createdByUserId  String
+  redeemedAt       DateTime?
+  redeemedByUserId String?
+  maxUses          Int      @default(1)
+  useCount         Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  createdBy        User         @relation("InvitationCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  redeemedBy       User?        @relation("InvitationRedeemer", fields: [redeemedByUserId], references: [id], onDelete: Restrict)
+  registrationSessions RegistrationSession[]
+
+  @@index([organizationId, purpose, status])
+  @@index([expiresAt])
+  @@map("organization_invitations")
+}
+
+model ClinicCode {
+  id              String   @id @default(cuid())
+  organizationId  String
+  purpose         String   @default("PATIENT")
+  codeHash        String
+  label           String?
+  status          String   @default("ACTIVE")
+  expiresAt       DateTime?
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  createdBy       User         @relation("ClinicCodeCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  registrationSessions RegistrationSession[]
+
+  @@unique([organizationId, codeHash])
+  @@index([organizationId, status])
+  @@map("clinic_codes")
+}
+
+model RegistrationSession {
+  id              String   @id @default(cuid())
+  purpose         String
+  organizationId  String
+  invitationId    String?
+  clinicCodeId    String?
+  status          String   @default("IN_PROGRESS")
+  email           String?
+  emailVerifiedAt DateTime?
+  phone           String?
+  phoneVerifiedAt DateTime?
+  firstName       String?
+  lastName        String?
+  displayName     String?
+  addressDraft    Json?
+  expiresAt       DateTime
+  completedUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  invitation      OrganizationInvitation? @relation(fields: [invitationId], references: [id], onDelete: Restrict)
+  clinicCode      ClinicCode? @relation(fields: [clinicCodeId], references: [id], onDelete: Restrict)
+  otpChallenges   AuthOtpChallenge[]
+
+  @@index([organizationId, status])
+  @@index([expiresAt])
+  @@index([invitationId])
+  @@map("registration_sessions")
+}
+
+model AuthOtpChallenge {
+  id                     String   @id @default(cuid())
+  destinationType        String
+  destinationNormalized  String
+  purpose                String
+  codeSalt               String
+  codeHash               String
+  registrationSessionId  String?
+  organizationId         String?
+  invitationId           String?
+  userId                 String?
+  attempts               Int      @default(0)
+  maxAttempts            Int
+  expiresAt              DateTime
+  consumedAt             DateTime?
+  lastSentAt             DateTime
+  resendCount            Int      @default(0)
+  ipHash                 String?
+  createdAt              DateTime @default(now())
+  registrationSession    RegistrationSession? @relation(fields: [registrationSessionId], references: [id], onDelete: Restrict)
+
+  @@index([destinationNormalized, purpose, createdAt])
+  @@index([expiresAt])
+  @@index([registrationSessionId])
+  @@index([userId, purpose, createdAt])
+  @@map("auth_otp_challenges")
+}
+
+model AuthRateLimitBucket {
+  id              String   @id @default(cuid())
+  bucketKey       String
+  windowStartedAt DateTime
+  count           Int      @default(0)
+  updatedAt       DateTime @updatedAt
+
+  @@unique([bucketKey, windowStartedAt])
+  @@index([bucketKey])
+  @@map("auth_rate_limit_buckets")
 }
